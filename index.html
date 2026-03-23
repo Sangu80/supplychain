@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Star Phones — Supply Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+/* ── TOKENS ── */
+:root{
+  --black:#0f0f0f;--black2:#1a1a1a;--white:#fff;
+  --green:#22c55e;--green2:#16a34a;--green3:#15803d;
+  --gbg:#f0fdf4;--gdim:rgba(34,197,94,.1);
+  --grey:#6b7280;--grey2:#9ca3af;--grey3:#d1d5db;--grey4:#f3f4f6;--grey5:#f9fafb;
+  --bdr:#e5e7eb;--tx:#111827;--tx2:#374151;--tx3:#6b7280;
+  --or:#f59e0b;--rd:#ef4444;--bl:#3b82f6;
+  --r:10px;--sh:0 1px 8px rgba(0,0,0,.07);--sh2:0 4px 24px rgba(0,0,0,.1);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--white);color:var(--tx);font-family:'Inter',-apple-system,sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:none;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--black);color:var(--white)}
+.btn-primary:hover{background:var(--black2);transform:translateY(-1px);box-shadow:var(--sh2)}
+.btn-green{background:var(--green2);color:var(--white)}
+.btn-green:hover{background:var(--green3);transform:translateY(-1px);box-shadow:0 4px 16px rgba(22,163,74,.3)}
+.btn-outline{background:var(--white);color:var(--tx);border:1.5px solid var(--bdr)}
+.btn-outline:hover{border-color:var(--tx3)}
+.btn-ghost{background:var(--grey4);color:var(--tx2);border:1px solid var(--bdr)}
+.btn-ghost:hover{background:#e9eaec}
+.btn-danger{background:var(--rd);color:var(--white)}
+.btn-danger:hover{background:#dc2626}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-icon{width:30px;height:30px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:7px}
+
+/* ── LOGIN SCREEN ── */
+#login-screen{
+  display:flex;min-height:100vh;
+  background:linear-gradient(135deg,#f0fdf4 0%,#ffffff 50%,#f9fafb 100%);
+}
+
+.login-left{
+  flex:1;display:flex;align-items:center;justify-content:center;padding:40px;
+}
+
+.login-right{
+  width:460px;display:flex;align-items:center;justify-content:center;
+  padding:40px;background:var(--white);border-left:1px solid var(--bdr);
+  box-shadow:-4px 0 24px rgba(0,0,0,.04);
+}
+
+@media(max-width:860px){
+  .login-left{display:none}
+  .login-right{width:100%;border-left:none;box-shadow:none}
+}
+
+.login-brand{
+  max-width:480px;
+}
+
+.login-logo-wrap{
+  display:flex;align-items:center;gap:12px;margin-bottom:32px;
+}
+
+.login-hero-title{
+  font-size:38px;font-weight:900;color:var(--tx);letter-spacing:-1.5px;line-height:1.15;margin-bottom:16px;
+}
+
+.login-hero-title span{color:var(--green2);}
+
+.login-hero-sub{
+  font-size:15px;color:var(--tx3);line-height:1.7;margin-bottom:32px;
+}
+
+.login-features{display:flex;flex-direction:column;gap:12px;}
+
+.login-feat{
+  display:flex;align-items:center;gap:10px;
+  background:var(--white);border:1px solid var(--bdr);border-radius:10px;padding:12px 16px;
+  box-shadow:var(--sh);
+}
+
+.login-feat .feat-icon{
+  width:32px;height:32px;border-radius:8px;background:var(--gbg);
+  border:1px solid rgba(34,197,94,.2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;
+}
+
+.login-feat .feat-text{font-size:12px;color:var(--tx2);font-weight:500;}
+.login-feat .feat-text strong{color:var(--tx);font-weight:700;}
+
+/* ── LOGIN CARD ── */
+.login-card{width:100%;max-width:380px;}
+
+.login-card-logo{
+  display:flex;align-items:center;gap:10px;margin-bottom:28px;
+}
+
+.login-card h2{
+  font-size:22px;font-weight:800;color:var(--tx);letter-spacing:-.5px;margin-bottom:6px;
+}
+
+.login-card p{font-size:13px;color:var(--tx3);margin-bottom:28px;}
+
+.login-form{display:flex;flex-direction:column;gap:16px;}
+
+.lf-group{display:flex;flex-direction:column;gap:5px;}
+
+.lf-label{font-size:11px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;}
+
+.lf-input{
+  background:var(--grey5);border:1.5px solid var(--bdr);color:var(--tx);
+  padding:10px 14px;border-radius:9px;font-family:inherit;font-size:14px;
+  outline:none;transition:all .15s;width:100%;
+}
+.lf-input:focus{border-color:var(--black);background:var(--white);box-shadow:0 0 0 3px rgba(0,0,0,.06);}
+.lf-input::placeholder{color:var(--grey2);}
+
+.login-btn{
+  width:100%;padding:12px;border-radius:9px;background:var(--black);color:var(--white);
+  border:none;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;
+  transition:all .15s;margin-top:4px;
+}
+.login-btn:hover{background:var(--black2);box-shadow:0 4px 16px rgba(0,0,0,.18);}
+
+.login-error{
+  background:#fef2f2;border:1px solid #fecaca;color:#dc2626;
+  border-radius:8px;padding:10px 14px;font-size:12px;font-weight:600;
+  display:none;align-items:center;gap:8px;
+}
+
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;}
+
+.role-card{
+  background:var(--grey5);border:1.5px solid var(--bdr);border-radius:9px;
+  padding:12px;cursor:pointer;transition:all .15s;text-align:center;
+}
+.role-card:hover{border-color:var(--grey3);background:var(--white);}
+.role-card.selected{background:var(--gbg);border-color:var(--green2);box-shadow:0 0 0 2px rgba(34,197,94,.15);}
+.role-card .rc-icon{font-size:20px;margin-bottom:4px;}
+.role-card .rc-name{font-size:11px;font-weight:700;color:var(--tx);}
+.role-card .rc-desc{font-size:10px;color:var(--tx3);margin-top:1px;}
+
+.hint-box{
+  background:var(--gbg);border:1px solid rgba(34,197,94,.25);border-radius:8px;
+  padding:10px 14px;font-size:11px;color:var(--tx3);margin-top:8px;line-height:1.6;
+}
+.hint-box strong{color:var(--green2);}
+
+/* ── TOP BAR ── */
+.topbar{background:var(--black);color:rgba(255,255,255,.65);text-align:center;font-size:11px;letter-spacing:.4px;padding:6px 16px;}
+.topbar span{color:var(--green);}
+
+/* ── HEADER ── */
+header{background:var(--white);border-bottom:1px solid var(--bdr);position:sticky;top:0;z-index:300;box-shadow:0 1px 0 var(--bdr),var(--sh);}
+.hinner{max-width:1400px;margin:0 auto;padding:0 22px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:14px;}
+
+/* LOGO SVG */
+.sp-logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0;}
+.sp-logo-svg{height:38px;width:auto;}
+
+/* NAV TABS */
+.ntabs{display:flex;gap:2px;background:var(--grey4);border:1px solid var(--bdr);border-radius:8px;padding:3px;}
+.ntab{padding:6px 14px;border-radius:6px;border:none;background:transparent;color:var(--tx3);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:all .14s;white-space:nowrap;}
+.ntab:hover{color:var(--tx);background:var(--white);}
+.ntab.on{background:var(--black);color:var(--white);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.2);}
+.ntab:disabled{opacity:.35;cursor:not-allowed;}
+.ntab:disabled:hover{background:transparent;color:var(--tx3);}
+
+/* USER CHIP */
+.user-chip{
+  display:flex;align-items:center;gap:8px;
+  background:var(--grey5);border:1px solid var(--bdr);border-radius:20px;
+  padding:5px 12px 5px 6px;cursor:pointer;transition:all .14s;
+}
+.user-chip:hover{background:var(--grey4);}
+.uc-avatar{
+  width:26px;height:26px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:11px;font-weight:800;color:var(--white);flex-shrink:0;
+}
+.uc-name{font-size:12px;font-weight:700;color:var(--tx);}
+.uc-role{font-size:10px;color:var(--tx3);}
+
+/* ROLE BADGE */
+.role-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;
+  padding:2px 8px;border-radius:20px;
+}
+.rb-admin{background:#fef3c7;color:#92400e;border:1px solid #fde68a;}
+.rb-purchasing{background:var(--gbg);color:var(--green3);border:1px solid rgba(34,197,94,.3);}
+.rb-accounts{background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe;}
+.rb-warehouse{background:#f3e8ff;color:#7e22ce;border:1px solid #e9d5ff;}
+
+/* ── PAGES ── */
+.app{min-height:calc(100vh - 97px);}
+.page{display:none;animation:fin .24s ease;}
+.page.on{display:block;}
+@keyframes fin{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.pw{max-width:1400px;margin:0 auto;padding:26px 22px;}
+
+/* SUB HEADER */
+.sh{background:var(--black);padding:11px 22px;}
+.shi{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.sht{font-size:14px;font-weight:700;color:var(--white);letter-spacing:-.2px;}
+.shs{font-size:11px;color:rgba(255,255,255,.5);margin-top:1px;}
+
+/* STATS */
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-bottom:22px;}
+.sc{background:var(--white);border:1px solid var(--bdr);border-radius:var(--r);padding:17px 17px 14px;position:relative;overflow:hidden;transition:box-shadow .14s,transform .14s;box-shadow:var(--sh);}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--ac,var(--green2));}
+.sc:hover{transform:translateY(-1px);box-shadow:var(--sh2);}
+.si{font-size:18px;margin-bottom:7px;}
+.sv{font-size:26px;font-weight:800;color:var(--tx);line-height:1;letter-spacing:-1px;}
+.sl{font-size:10px;font-weight:600;color:var(--tx3);margin-top:3px;text-transform:uppercase;letter-spacing:.5px;}
+
+/* CARD */
+.card{background:var(--white);border:1px solid var(--bdr);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);}
+.ch{padding:13px 17px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px;background:var(--grey5);}
+.ct{font-size:13px;font-weight:700;color:var(--tx);}
+
+/* TABLE */
+.tw{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{background:var(--grey5);color:var(--tx3);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.4px;padding:10px 13px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--bdr);}
+tbody tr{border-bottom:1px solid #f3f4f6;transition:background .12s;}
+tbody tr:hover{background:var(--grey5);}
+tbody td{padding:11px 13px;vertical-align:middle;}
+.sn{font-weight:700;font-size:13px;color:var(--tx);}
+
+/* LOCKED CELL */
+.locked{color:var(--grey2)!important;cursor:not-allowed;font-size:11px;font-style:italic;}
+.lock-icon{font-size:11px;margin-right:3px;opacity:.5;}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;}
+.bg{background:#dcfce7;color:#15803d;border:1px solid #bbf7d0;}
+.bo{background:#fef3c7;color:#92400e;border:1px solid #fde68a;}
+.bb{background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe;}
+.bgr{background:var(--grey4);color:var(--tx2);border:1px solid var(--bdr);}
+.brd{background:#fee2e2;color:#991b1b;border:1px solid #fecaca;}
+
+/* PIPELINE */
+.pipe{display:flex;align-items:center;gap:2px;}
+.pd{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.pd.dn{background:var(--green2);}
+.pd.nw{background:var(--green2);animation:pp 1.6s infinite;box-shadow:0 0 6px rgba(22,163,74,.5);}
+.pd.wt{background:var(--grey3);}
+.pl{width:10px;height:2px;border-radius:2px;}
+.pl.dn{background:var(--green2);}
+.pl.wt{background:var(--grey3);}
+@keyframes pp{0%,100%{transform:scale(1)}50%{transform:scale(1.4);opacity:.6}}
+
+/* SEARCH */
+.sbar{display:flex;align-items:center;gap:8px;padding:9px 15px;border-bottom:1px solid var(--bdr);background:var(--grey5);flex-wrap:wrap;}
+.sbar input{background:var(--white);border:1px solid var(--bdr);border-radius:8px;padding:7px 12px;font-size:13px;font-family:inherit;color:var(--tx);outline:none;flex:1;min-width:180px;max-width:290px;transition:border-color .14s;}
+.sbar input:focus{border-color:var(--tx3);}
+.sbar input::placeholder{color:var(--grey2);}
+
+/* FILTER PILL */
+.fpill{padding:4px 10px;border-radius:20px;border:1px solid var(--bdr);background:var(--white);color:var(--tx3);font-size:11px;font-weight:600;cursor:pointer;transition:all .12s;font-family:inherit;}
+.fpill:hover{border-color:var(--tx3);color:var(--tx);}
+.fpill.on{background:var(--black);color:var(--white);border-color:var(--black);}
+
+/* FORMS */
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fg.full{grid-column:1/-1;}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+label{font-size:11px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;}
+input[type=text],input[type=email],input[type=date],select,textarea{
+  background:var(--grey5);border:1px solid var(--bdr);color:var(--tx);
+  padding:8px 12px;border-radius:8px;font-family:inherit;font-size:13px;outline:none;
+  transition:all .14s;width:100%;}
+input:focus,select:focus,textarea:focus{border-color:var(--black);box-shadow:0 0 0 3px rgba(0,0,0,.06);background:var(--white);}
+input::placeholder,textarea::placeholder{color:var(--grey2);}
+input:disabled,select:disabled,textarea:disabled{background:var(--grey4);color:var(--grey2);cursor:not-allowed;border-color:var(--grey3);}
+select option{background:var(--white);color:var(--tx);}
+textarea{resize:vertical;min-height:70px;}
+
+/* INNER TABS */
+.itabs{display:flex;gap:0;border-bottom:2px solid var(--bdr);margin-bottom:18px;}
+.it{padding:9px 17px;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:500;color:var(--tx3);cursor:pointer;transition:all .14s;border-bottom:2px solid transparent;margin-bottom:-2px;}
+.it:hover{color:var(--tx);}
+.it.on{color:var(--tx);font-weight:700;border-bottom-color:var(--black);}
+
+/* STEPS */
+.steps{display:flex;margin-bottom:18px;}
+.stp{flex:1;text-align:center;position:relative;}
+.stp::after{content:'';position:absolute;top:10px;left:50%;right:-50%;height:2px;background:var(--grey3);z-index:0;}
+.stp:last-child::after{display:none;}
+.stp-d{width:22px;height:22px;border-radius:50%;background:var(--grey3);border:2px solid var(--bdr);margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;position:relative;z-index:1;transition:all .2s;color:var(--grey2);}
+.stp.dn .stp-d{background:var(--green2);border-color:var(--green2);color:#fff;box-shadow:0 0 8px rgba(22,163,74,.35);}
+.stp.nw .stp-d{background:var(--white);border:2.5px solid var(--black);color:var(--black);box-shadow:0 0 0 3px rgba(0,0,0,.07);}
+.stp-l{font-size:9px;color:var(--tx3);font-weight:600;text-transform:uppercase;letter-spacing:.3px;}
+.stp.dn .stp-l{color:var(--green2);}
+.stp.nw .stp-l{color:var(--black);font-weight:700;}
+
+/* DROP ZONE */
+.dz{border:2px dashed var(--grey3);border-radius:var(--r);background:var(--grey5);padding:30px 20px;text-align:center;cursor:pointer;transition:all .2s;}
+.dz:hover,.dz.ov{border-color:var(--green2);background:#f0fdf4;}
+.dz-icon{font-size:1.9rem;margin-bottom:7px;display:block;}
+.dz-title{font-size:14px;font-weight:700;color:var(--tx);margin-bottom:4px;}
+.dz-sub{font-size:12px;color:var(--tx3);margin-bottom:11px;}
+.chip{background:var(--grey4);border:1px solid var(--bdr);border-radius:4px;padding:2px 7px;font-size:10px;color:var(--tx3);display:inline-block;margin:2px;}
+
+/* FILE CHIP */
+.fc{display:inline-flex;align-items:center;gap:7px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:6px 11px;font-size:12px;}
+.fcn{font-weight:700;color:var(--green2);}
+.fcr{cursor:pointer;color:var(--grey2);background:none;border:none;font-size:13px;padding:0;transition:color .14s;}
+.fcr:hover{color:var(--rd);}
+
+/* MINI TABLE */
+.mtbl{font-size:12px;width:100%;}
+.mtbl th{background:var(--grey5);color:var(--tx3);padding:5px 9px;font-weight:600;font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--bdr);}
+.mtbl td{padding:5px 9px;border-bottom:1px solid #f3f4f6;color:var(--tx);}
+
+/* OVERLAY / MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.42);backdrop-filter:blur(4px);z-index:500;align-items:center;justify-content:center;padding:16px;}
+.overlay.open{display:flex;}
+.modal{background:var(--white);border:1px solid var(--bdr);border-radius:14px;padding:24px;width:100%;max-width:620px;max-height:92vh;overflow-y:auto;animation:mi .22s ease;box-shadow:0 20px 60px rgba(0,0,0,.18);}
+.modal-lg{max-width:760px;}
+@keyframes mi{from{opacity:0;transform:scale(.96) translateY(-6px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.mt{font-size:16px;font-weight:800;color:var(--tx);letter-spacing:-.3px;}
+.mc{width:28px;height:28px;border-radius:6px;background:var(--grey4);border:1px solid var(--bdr);color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .14s;}
+.mc:hover{background:#e9eaec;color:var(--tx);}
+
+/* TOGGLE */
+.toggle{width:38px;height:21px;border-radius:11px;background:var(--grey3);border:none;cursor:pointer;position:relative;transition:all .2s;flex-shrink:0;}
+.toggle.on{background:var(--green2);}
+.toggle::after{content:'';position:absolute;width:15px;height:15px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.18);}
+.toggle.on::after{transform:translateX(17px);}
+
+/* TOAST */
+#toasts{position:fixed;bottom:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:var(--white);border:1px solid var(--bdr);border-radius:10px;padding:11px 15px;font-size:13px;color:var(--tx);display:flex;align-items:center;gap:8px;min-width:230px;box-shadow:var(--sh2);animation:ti .24s ease;}
+@keyframes ti{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
+
+/* MISC */
+.divider{height:1px;background:var(--bdr);margin:13px 0;}
+.empty{text-align:center;padding:44px 18px;color:var(--tx3);}
+.empty .ei{font-size:2.4rem;margin-bottom:10px;opacity:.3;}
+.empty h3{font-size:14px;font-weight:700;margin-bottom:4px;color:var(--tx2);}
+.info-box{border-radius:8px;padding:10px 14px;font-size:12px;margin-bottom:14px;}
+.ib-green{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;}
+.ib-yellow{background:#fffbeb;border:1px solid #fde68a;color:#92400e;}
+.ib-blue{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;}
+.ib-purple{background:#faf5ff;border:1px solid #e9d5ff;color:#6b21a8;}
+.cgrid{display:grid;grid-template-columns:1fr 284px;gap:15px;align-items:start;}
+.srow{display:flex;align-items:center;justify-content:space-between;padding:13px 17px;border-bottom:1px solid var(--bdr);gap:14px;flex-wrap:wrap;}
+.srow:last-child{border-bottom:none;}
+.shdr{padding:11px 17px;border-bottom:1px solid var(--bdr);font-size:11px;font-weight:700;color:var(--tx);background:var(--grey5);display:flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:.5px;}
+
+/* PERMISSION NOTICE */
+.perm-notice{display:flex;align-items:center;gap:8px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;font-size:12px;color:#92400e;margin-bottom:16px;}
+
+/* USER MANAGEMENT TABLE */
+.user-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--bdr);flex-wrap:wrap;}
+.user-row:last-child{border-bottom:none;}
+.ua{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--white);flex-shrink:0;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--grey5);}
+::-webkit-scrollbar-thumb{background:var(--grey3);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--grey2);}
+
+/* FOOTER */
+footer{background:var(--black);color:rgba(255,255,255,.4);text-align:center;font-size:11px;padding:14px 22px;letter-spacing:.3px;margin-top:40px;}
+footer span{color:var(--green);}
+
+@media(max-width:1100px){.cgrid{grid-template-columns:1fr}}
+@media(max-width:768px){.ntabs{display:none}.pw{padding:14px}.sgrid{grid-template-columns:repeat(2,1fr)}.fgrid{grid-template-columns:1fr}.hinner{padding:0 12px}}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     LOGIN SCREEN
+══════════════════════════════════════════ -->
+<div id="login-screen">
+
+  <!-- LEFT: Brand panel -->
+  <div class="login-left">
+    <div class="login-brand">
+      <div class="login-logo-wrap">
+        <svg height="44" viewBox="0 0 148 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="44" height="44" rx="9" fill="#0f0f0f"/>
+          <path d="M22 8 L24.9 17.4 L34.9 17.4 L27.0 23.2 L29.9 32.6 L22 26.8 L14.1 32.6 L17.0 23.2 L9.1 17.4 L19.1 17.4 Z" fill="#22c55e"/>
+          <text x="52" y="21" font-family="Inter,-apple-system,sans-serif" font-size="16" font-weight="900" fill="#0f0f0f" letter-spacing="-0.4">STAR</text>
+          <text x="52" y="38" font-family="Inter,-apple-system,sans-serif" font-size="16" font-weight="900" fill="#0f0f0f" letter-spacing="-0.4">PHONES</text>
+          <rect x="52" y="41.5" width="88" height="2.5" rx="1.25" fill="#22c55e"/>
+        </svg>
+      </div>
+
+      <div class="login-hero-title">
+        Supply &amp; Goods<br><span>Tracking System</span>
+      </div>
+
+      <div class="login-hero-sub">
+        Internal operations tool for Star Phones Australia. Track every supplier order from purchase to warehouse receipt — across all teams.
+      </div>
+
+      <div class="login-features">
+        <div class="login-feat">
+          <div class="feat-icon">👑</div>
+          <div class="feat-text"><strong>Admin</strong> — Full access: create orders, manage all columns, users &amp; settings</div>
+        </div>
+        <div class="login-feat">
+          <div class="feat-icon">💳</div>
+          <div class="feat-text"><strong>Accounts Team</strong> — Update 30% deposit &amp; final payment columns only</div>
+        </div>
+        <div class="login-feat">
+          <div class="feat-icon">🏭</div>
+          <div class="feat-text"><strong>Warehouse Team</strong> — Update production, shipping &amp; received columns only</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Login form -->
+  <div class="login-right">
+    <div class="login-card">
+
+      <div class="login-card-logo">
+        <svg height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#0f0f0f"/>
+          <path d="M16 5.5 L18.0 12.2 L25.2 12.2 L19.6 16.3 L21.6 23.0 L16 18.9 L10.4 23.0 L12.4 16.3 L6.8 12.2 L14.0 12.2 Z" fill="#22c55e"/>
+        </svg>
+        <div>
+          <div style="font-size:13px;font-weight:800;color:var(--tx);letter-spacing:-.2px;">Star Phones Australia</div>
+          <div style="font-size:10px;color:var(--tx3);">Supply Tracker · Internal Tool</div>
+        </div>
+      </div>
+
+      <h2>Sign in to continue</h2>
+      <p>Enter your credentials to access the supply tracker.</p>
+
+      <div class="login-form">
+        <div class="lf-group">
+          <div class="lf-label">Username</div>
+          <input type="text" class="lf-input" id="l-user" placeholder="e.g. admin" onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
+        <div class="lf-group">
+          <div class="lf-label">Password</div>
+          <input type="password" class="lf-input" id="l-pass" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
+
+        <div class="login-error" id="login-err">
+          ❌ <span id="login-err-msg">Invalid username or password.</span>
+        </div>
+
+        <button class="login-btn" onclick="doLogin()">Sign In →</button>
+      </div>
+
+      <div class="hint-box" style="margin-top:18px;">
+        <strong>Team Accounts:</strong><br>
+        admin / admin123 &nbsp;·&nbsp; accounts / pay2026<br>
+        warehouse / recv2026
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /login-screen -->
+
+
+<!-- ══════════════════════════════════════════
+     MAIN APP (hidden until logged in)
+══════════════════════════════════════════ -->
+<div id="main-app" style="display:none;">
+
+  <div class="topbar">
+    Internal Tool · <span>Star Phones Australia Pty Ltd</span> · Supply &amp; Goods Tracker
+  </div>
+
+  <header>
+    <div class="hinner">
+
+      <!-- LOGO -->
+      <a class="sp-logo" href="#" onclick="go('dashboard');return false;">
+        <svg class="sp-logo-svg" viewBox="0 0 148 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="44" height="44" rx="8" fill="#0f0f0f"/>
+          <path d="M22 8 L24.9 17.4 L34.9 17.4 L27.0 23.2 L29.9 32.6 L22 26.8 L14.1 32.6 L17.0 23.2 L9.1 17.4 L19.1 17.4 Z" fill="#22c55e"/>
+          <text x="52" y="21" font-family="Inter,-apple-system,sans-serif" font-size="15" font-weight="900" fill="#0f0f0f" letter-spacing="-0.3">STAR</text>
+          <text x="52" y="37" font-family="Inter,-apple-system,sans-serif" font-size="15" font-weight="900" fill="#0f0f0f" letter-spacing="-0.3">PHONES</text>
+          <rect x="52" y="40" width="84" height="2.5" rx="1.25" fill="#22c55e"/>
+        </svg>
+        <div style="display:flex;flex-direction:column;line-height:1.2;margin-left:2px;">
+          <span style="font-size:9px;font-weight:700;color:var(--tx3);letter-spacing:.8px;text-transform:uppercase;">Supply Tracker</span>
+          <span style="font-size:8px;color:var(--grey2);letter-spacing:.4px;">Internal Operations</span>
+        </div>
+      </a>
+
+      <!-- NAV -->
+      <nav class="ntabs" id="main-nav">
+        <button class="ntab on"  onclick="go('dashboard')">📊 Dashboard</button>
+        <button class="ntab"     onclick="go('orders')"   id="nav-orders">📦 Orders</button>
+        <button class="ntab"     onclick="go('reminders')" id="nav-reminders">🔔 Reminders</button>
+        <button class="ntab"     onclick="go('users')"    id="nav-users">👥 Users</button>
+        <button class="ntab"     onclick="go('settings')" id="nav-settings">⚙️ Settings</button>
+      </nav>
+
+      <!-- USER + LOGOUT -->
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="user-chip" onclick="go('settings')">
+          <div class="uc-avatar" id="hdr-avatar">A</div>
+          <div>
+            <div class="uc-name" id="hdr-name">Admin</div>
+            <div class="uc-role" id="hdr-role">Administrator</div>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="doLogout()">Sign Out</button>
+        <button class="btn btn-primary" onclick="openNew()" id="hdr-new-btn">＋ New Order</button>
+      </div>
+
+    </div>
+  </header>
+
+  <div class="app">
+
+    <!-- ═══ DASHBOARD ═══ -->
+    <div id="pg-dashboard" class="page on">
+      <div class="sh"><div class="shi">
+        <div><div class="sht">📊 Goods Tracking Dashboard</div><div class="shs" id="dash-sub">Loading…</div></div>
+        <button class="btn btn-green" onclick="openNew()" id="dash-new-btn">＋ Start New Order</button>
+      </div></div>
+      <div class="pw">
+        <div class="sgrid">
+          <div class="sc" style="--ac:#0f0f0f;"><div class="si">📋</div><div class="sv" id="s-tot">0</div><div class="sl">Total Orders</div></div>
+          <div class="sc" style="--ac:#f59e0b;"><div class="si">💳</div><div class="sv" id="s-pay">0</div><div class="sl">Awaiting Payment</div></div>
+          <div class="sc" style="--ac:#3b82f6;"><div class="si">🏭</div><div class="sv" id="s-prd">0</div><div class="sl">In Production</div></div>
+          <div class="sc" style="--ac:#3b82f6;"><div class="si">🚢</div><div class="sv" id="s-shp">0</div><div class="sl">Shipped</div></div>
+          <div class="sc" style="--ac:#16a34a;"><div class="si">✅</div><div class="sv" id="s-rcv">0</div><div class="sl">Received</div></div>
+        </div>
+        <div class="cgrid">
+          <div class="card">
+            <div class="ch">
+              <span class="ct">Recent Orders</span>
+              <div style="display:flex;gap:7px;">
+                <button class="btn btn-ghost btn-sm" onclick="go('orders')">View All →</button>
+                <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ CSV</button>
+              </div>
+            </div>
+            <div class="tw"><table>
+              <thead><tr><th>Supplier</th><th>Goods</th><th>Month</th><th>30% Paid</th><th>Stage</th><th>Progress</th><th></th></tr></thead>
+              <tbody id="dash-tbody"></tbody>
+            </table></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:13px;">
+            <div class="card"><div class="ch"><span class="ct">⚠️ Needs Action</span></div><div style="padding:11px 14px;" id="attn"></div></div>
+            <div class="card"><div class="ch"><span class="ct">📋 Supplier Summary</span></div><div style="padding:9px 14px;" id="sup-sum"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ ORDERS ═══ -->
+    <div id="pg-orders" class="page">
+      <div class="sh"><div class="shi">
+        <div><div class="sht">📦 All Orders</div><div class="shs" id="ord-sub">Loading…</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-outline btn-sm" style="color:rgba(255,255,255,.65);border-color:rgba(255,255,255,.22);" onclick="exportCSV()">⬇ CSV</button>
+          <button class="btn btn-green" onclick="openNew()" id="ord-new-btn">＋ New Order</button>
+        </div>
+      </div></div>
+      <div class="pw">
+        <div class="card">
+          <div class="sbar">
+            <input id="ord-q" type="text" placeholder="🔍  Search supplier, goods, month…" oninput="renderOrders()">
+            <div id="mfilters" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+          </div>
+          <div class="tw"><table>
+            <thead><tr>
+              <th>Supplier</th><th>Goods Type</th><th>Month</th>
+              <th>PO File</th><th>30% Paid</th><th>Final Paid</th>
+              <th>Production</th><th>Goods Ready</th><th>Shipped</th>
+              <th>Arrival</th><th>Received</th><th>Stage</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="ord-tbody"></tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ REMINDERS ═══ -->
+    <div id="pg-reminders" class="page">
+      <div class="sh"><div class="shi">
+        <div><div class="sht">🔔 Email Reminders</div><div class="shs">Send supplier follow-ups via Gmail</div></div>
+      </div></div>
+      <div class="pw">
+        <div class="card" style="margin-bottom:18px;">
+          <div class="ch"><span class="ct">✉️ Compose Reminder</span></div>
+          <div style="padding:17px;">
+            <div class="fgrid">
+              <div class="fg"><label>Supplier</label><select id="rem-sup" onchange="buildRemMsg()"><option value="">— Select Supplier —</option></select></div>
+              <div class="fg"><label>Recipient Email</label><input type="email" id="rem-email" placeholder="supplier@example.com"></div>
+              <div class="fg"><label>Reminder Type</label>
+                <select id="rem-type" onchange="buildRemMsg()">
+                  <option value="pl">📄 Request PL / Proforma Invoice</option>
+                  <option value="payment30">💳 30% Payment Follow-up</option>
+                  <option value="paymentfinal">💳 Final Payment Follow-up</option>
+                  <option value="production">🏭 Production Status Check</option>
+                  <option value="ready">📦 Goods Ready Confirmation</option>
+                  <option value="shipping">🚢 Shipping Update Request</option>
+                  <option value="arrival">✅ Arrival Confirmation</option>
+                  <option value="custom">✍️ Custom Message</option>
+                </select>
+              </div>
+              <div class="fg"><label>Schedule Date</label><input type="date" id="rem-date"></div>
+              <div class="fg full"><label>Message</label><textarea id="rem-msg" rows="5"></textarea></div>
+            </div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:13px;flex-wrap:wrap;">
+              <button class="btn btn-ghost btn-sm" onclick="clearRem()">Clear</button>
+              <button class="btn btn-outline btn-sm" onclick="saveRem()">💾 Save to Queue</button>
+              <button class="btn btn-primary" onclick="sendGmail()">📧 Open in Gmail</button>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:11px;color:var(--tx);">
+          📬 Reminder Queue <span id="rem-cnt" style="font-size:11px;font-weight:400;color:var(--tx3);"></span>
+        </div>
+        <div id="rem-queue" style="display:flex;flex-direction:column;gap:9px;"></div>
+      </div>
+    </div>
+
+    <!-- ═══ USERS (Admin only) ═══ -->
+    <div id="pg-users" class="page">
+      <div class="sh"><div class="shi">
+        <div><div class="sht">👥 User Management</div><div class="shs">Manage team accounts and role permissions</div></div>
+        <button class="btn btn-green" onclick="openAddUser()">＋ Add User</button>
+      </div></div>
+      <div class="pw" style="max-width:800px;">
+
+        <div class="info-box ib-blue" style="margin-bottom:18px;">
+          ℹ️ <strong>Role Permissions:</strong> Each role has specific access to the order tracker. Users can only edit the columns relevant to their team.
+        </div>
+
+        <!-- Role permissions table -->
+        <div class="card" style="margin-bottom:18px;">
+          <div class="ch"><span class="ct">🔑 Role Permissions Overview</span></div>
+          <div class="tw"><table>
+            <thead><tr><th>Role</th><th>Create Orders</th><th>Upload PO</th><th>Payment Cols</th><th>Fulfilment Cols</th><th>User Mgmt</th><th>Settings</th></tr></thead>
+            <tbody>
+              <tr><td><span class="badge" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;">👑 Admin</span></td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+              <tr><td><span class="badge bb">💳 Accounts</span></td><td>❌</td><td>❌</td><td>✅</td><td>👁 View only</td><td>❌</td><td>❌</td></tr>
+              <tr><td><span class="badge" style="background:#f3e8ff;color:#7e22ce;border:1px solid #e9d5ff;">🏭 Warehouse</span></td><td>❌</td><td>❌</td><td>👁 View only</td><td>✅</td><td>❌</td><td>❌</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+
+        <!-- User list -->
+        <div class="card">
+          <div class="ch"><span class="ct">👤 Team Members</span><span id="user-count" style="font-size:11px;color:var(--tx3);"></span></div>
+          <div id="user-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SETTINGS ═══ -->
+    <div id="pg-settings" class="page">
+      <div class="sh"><div class="shi">
+        <div><div class="sht">⚙️ Settings</div><div class="shs">Manage suppliers, preferences and data</div></div>
+      </div></div>
+      <div class="pw" style="max-width:660px;">
+
+        <!-- My Profile -->
+        <div class="card" style="margin-bottom:16px;">
+          <div class="shdr">👤 My Profile</div>
+          <div style="padding:16px 17px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+            <div class="ua" id="profile-avatar" style="width:48px;height:48px;font-size:16px;border-radius:50%;"></div>
+            <div>
+              <div style="font-weight:800;font-size:16px;color:var(--tx);" id="profile-name">Admin</div>
+              <div id="profile-role-badge" style="margin-top:4px;"></div>
+            </div>
+            <button class="btn btn-ghost btn-sm" style="margin-left:auto;" onclick="openChangePw()">🔒 Change Password</button>
+          </div>
+        </div>
+
+        <!-- Company -->
+        <div class="card" style="margin-bottom:16px;" id="admin-settings-company">
+          <div class="shdr">🏢 Company</div>
+          <div class="srow">
+            <div><div style="font-weight:600;font-size:13px;">Company Name</div><div style="font-size:11px;color:var(--tx3);">Used in emails &amp; exports</div></div>
+            <input id="cfg-co" type="text" value="Star Phones Australia Pty Ltd" style="width:250px;">
+          </div>
+          <div class="srow">
+            <div><div style="font-weight:600;font-size:13px;">Default Reply Email</div><div style="font-size:11px;color:var(--tx3);">Pre-fills reminder composer</div></div>
+            <input id="cfg-em" type="email" placeholder="orders@starphones.com.au" style="width:250px;">
+          </div>
+        </div>
+
+        <!-- Suppliers -->
+        <div class="card" style="margin-bottom:16px;" id="admin-settings-sups">
+          <div class="shdr">🏭 Manage Suppliers
+            <button class="btn btn-primary btn-sm" style="margin-left:auto;" onclick="openAddSup()">＋ Add Supplier</button>
+          </div>
+          <div id="sup-chips" style="padding:11px 15px;display:flex;flex-wrap:wrap;gap:7px;min-height:48px;"></div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="card" style="margin-bottom:16px;">
+          <div class="shdr">🔔 Notifications</div>
+          <div class="srow">
+            <div><div style="font-weight:600;font-size:13px;">Overdue Alerts</div><div style="font-size:11px;color:var(--tx3);">Highlight ⚠️ when goods-ready date passes</div></div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+
+        <!-- Data (admin only) -->
+        <div class="card" style="margin-bottom:16px;" id="admin-settings-data">
+          <div class="shdr">💾 Data</div>
+          <div class="srow">
+            <div><div style="font-weight:600;font-size:13px;">Export All Orders</div></div>
+            <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+          </div>
+          <div class="srow">
+            <div><div style="font-weight:600;font-size:13px;">Clear All Orders</div><div style="font-size:11px;color:var(--tx3);">Permanently removes all records</div></div>
+            <button class="btn btn-ghost btn-sm" style="color:var(--rd);border-color:rgba(239,68,68,.28);" onclick="clearAll()">🗑 Clear Data</button>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;" id="settings-save-btn">
+          <button class="btn btn-primary" onclick="toast('Settings saved ✓','ok')">💾 Save Settings</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /app -->
+
+  <footer>© 2026 <span>Star Phones Australia Pty Ltd</span> · Supply Tracker · Internal Operations Tool</footer>
+
+</div><!-- /main-app -->
+
+
+<!-- ═══ MODAL: NEW / EDIT ORDER ═══ -->
+<div class="overlay" id="m-order">
+<div class="modal">
+  <div class="mh">
+    <div class="mt" id="m-order-title">📦 New Order</div>
+    <button class="mc" onclick="closeM('m-order')">✕</button>
+  </div>
+  <input type="hidden" id="edit-id" value="">
+  <div id="perm-notice-order"></div>
+
+  <div class="steps">
+    <div class="stp nw" id="stp0"><div class="stp-d">1</div><div class="stp-l">Order</div></div>
+    <div class="stp wt" id="stp1"><div class="stp-d">2</div><div class="stp-l">PO File</div></div>
+    <div class="stp wt" id="stp2"><div class="stp-d">3</div><div class="stp-l">Payments</div></div>
+    <div class="stp wt" id="stp3"><div class="stp-d">4</div><div class="stp-l">Fulfilment</div></div>
+    <div class="stp wt" id="stp4"><div class="stp-d">5</div><div class="stp-l">Done</div></div>
+  </div>
+
+  <div class="itabs">
+    <button class="it on" onclick="stab(0)">📋 Order</button>
+    <button class="it"    onclick="stab(1)">📤 PO File</button>
+    <button class="it"    onclick="stab(2)">💳 Payments</button>
+    <button class="it"    onclick="stab(3)">🚚 Fulfilment</button>
+  </div>
+
+  <!-- Tab 0: Order -->
+  <div id="t0">
+    <div class="fgrid">
+      <div class="fg"><label>Supplier *</label><select id="f-sup"><option value="">— Pick from saved list —</option></select></div>
+      <div class="fg"><label>Order Month *</label>
+        <select id="f-mo"><option>January</option><option>February</option><option selected>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select>
+      </div>
+      <div class="fg full"><label>Goods Type / Description</label><input type="text" id="f-goods" placeholder="e.g. Power Banks (X1, X3, X7)"></div>
+      <div class="fg"><label>Order Placed Date</label><input type="date" id="f-placed"></div>
+      <div class="fg"><label>Total Order Value (AUD)</label><input type="text" id="f-val" placeholder="e.g. 12,500.00"></div>
+      <div class="fg full"><label>Notes</label><textarea id="f-notes" rows="2" placeholder="Any additional notes…"></textarea></div>
+    </div>
+  </div>
+
+  <!-- Tab 1: PO File -->
+  <div id="t1" style="display:none;">
+    <div class="info-box ib-green" id="po-info-box">📊 Upload the <strong>Purchase Order Excel file</strong> you send to the supplier.</div>
+    <div class="dz" id="dz-po" onclick="document.getElementById('fi-po').click()" ondragover="dzO(event,'dz-po')" ondragleave="dzL('dz-po')" ondrop="dzD(event)">
+      <span class="dz-icon">📊</span>
+      <div class="dz-title">Upload Purchase Order (PO)</div>
+      <div class="dz-sub">Drag &amp; drop or click to browse</div>
+      <span class="chip">.xlsx</span><span class="chip">.xls</span><span class="chip">.csv</span><span class="chip">.pdf</span>
+    </div>
+    <input type="file" id="fi-po" style="display:none;" accept=".xlsx,.xls,.csv,.pdf" onchange="handleF(event)">
+    <div id="po-prev" style="margin-top:11px;"></div>
+    <div id="po-tbl" style="margin-top:9px;overflow-x:auto;"></div>
+  </div>
+
+  <!-- Tab 2: Payments (Accounts) -->
+  <div id="t2" style="display:none;">
+    <div class="info-box ib-blue" id="pay-info-box">🏦 <strong>Accounts Team:</strong> Update payment milestones once processed.</div>
+    <div style="font-size:11px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">30% Deposit</div>
+    <div class="fgrid">
+      <div class="fg"><label>Date Paid</label><input type="date" id="f-p30d"></div>
+      <div class="fg"><label>Amount Paid (AUD)</label><input type="text" id="f-p30a" placeholder="e.g. 3,750.00"></div>
+      <div class="fg"><label>TT / Reference #</label><input type="text" id="f-p30r" placeholder="e.g. TT#20260305"></div>
+      <div class="fg"><label>Confirmed by Supplier?</label>
+        <select id="f-p30c"><option value="">— Pending —</option><option value="Yes">✅ Yes</option><option value="No">❌ Not yet</option></select>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div style="font-size:11px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Final / Balance Payment</div>
+    <div class="fgrid">
+      <div class="fg"><label>Date Paid</label><input type="date" id="f-pfd"></div>
+      <div class="fg"><label>Amount Paid (AUD)</label><input type="text" id="f-pfa" placeholder="e.g. 8,750.00"></div>
+      <div class="fg"><label>TT / Reference #</label><input type="text" id="f-pfr" placeholder="e.g. TT#20260410"></div>
+      <div class="fg"><label>Confirmed by Supplier?</label>
+        <select id="f-pfc"><option value="">— Pending —</option><option value="Yes">✅ Yes</option><option value="No">❌ Not yet</option></select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 3: Fulfilment (Warehouse Team) -->
+  <div id="t3" style="display:none;">
+    <div class="info-box ib-green" id="ful-info-box">🏭 <strong>Warehouse Team:</strong> Update production, shipping and arrival details.</div>
+    <div class="fgrid">
+      <div class="fg"><label>In Production?</label>
+        <select id="f-prod"><option value="">— Not started —</option><option value="Yes">✅ Yes</option><option value="No">❌ No</option></select>
+      </div>
+      <div class="fg"><label>Goods Ready Date / Note</label><input type="text" id="f-ready" placeholder="e.g. 2026-03-31 or 'by end March'"></div>
+      <div class="fg"><label>Goods Shipped?</label><input type="text" id="f-ship" placeholder="YES / To Vina / —"></div>
+      <div class="fg"><label>Tracking Number</label><input type="text" id="f-track" placeholder="e.g. SF1234567890"></div>
+      <div class="fg"><label>Expected Arrival (Australia)</label><input type="date" id="f-arriv"></div>
+      <div class="fg"><label>Goods Received In-House?</label>
+        <select id="f-recv"><option value="">— Pending —</option><option value="Yes">✅ Yes</option><option value="Partial">⚠️ Partial</option><option value="No">❌ No</option></select>
+      </div>
+      <div class="fg"><label>Received Date</label><input type="date" id="f-rvdt"></div>
+      <div class="fg"><label>Received By (Staff)</label><input type="text" id="f-rvby" placeholder="e.g. Sarah"></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">
+    <button class="btn btn-ghost btn-sm" onclick="closeM('m-order')">Cancel</button>
+    <button class="btn btn-primary" onclick="saveOrder()">✓ Save Order</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══ MODAL: ADD SUPPLIER ═══ -->
+<div class="overlay" id="m-sup">
+<div class="modal" style="max-width:380px;">
+  <div class="mh"><div class="mt">➕ Add New Supplier</div><button class="mc" onclick="closeM('m-sup')">✕</button></div>
+  <div class="fg" style="margin-bottom:12px;"><label>Supplier Name *</label><input type="text" id="ns-name" placeholder="e.g. AQUA"></div>
+  <div class="fg" style="margin-bottom:12px;"><label>Contact Email (optional)</label><input type="email" id="ns-email" placeholder="supplier@example.com"></div>
+  <div class="fg" style="margin-bottom:16px;"><label>Country (optional)</label><input type="text" id="ns-country" placeholder="e.g. China"></div>
+  <div style="display:flex;gap:8px;justify-content:flex-end;">
+    <button class="btn btn-ghost btn-sm" onclick="closeM('m-sup')">Cancel</button>
+    <button class="btn btn-primary btn-sm" onclick="addSup()">Add Supplier</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══ MODAL: ADD USER ═══ -->
+<div class="overlay" id="m-add-user">
+<div class="modal" style="max-width:420px;">
+  <div class="mh"><div class="mt" id="m-user-title">➕ Add Team Member</div><button class="mc" onclick="closeM('m-add-user')">✕</button></div>
+  <input type="hidden" id="edit-user-idx" value="">
+  <div class="fgrid" style="margin-bottom:16px;">
+    <div class="fg"><label>Full Name *</label><input type="text" id="u-name" placeholder="e.g. Sarah Johnson"></div>
+    <div class="fg"><label>Username *</label><input type="text" id="u-username" placeholder="e.g. sarah.j"></div>
+    <div class="fg"><label>Password *</label><input type="password" id="u-pass" placeholder="Min 6 characters"></div>
+    <div class="fg"><label>Role *</label>
+      <select id="u-role">
+        <option value="admin">👑 Admin</option>
+        <option value="accounts" selected>💳 Accounts Team</option>
+        <option value="warehouse">🏭 Warehouse Team</option>
+      </select>
+    </div>
+  </div>
+  <div class="info-box ib-green" id="role-desc-box" style="font-size:11px;"></div>
+  <div style="display:flex;gap:8px;justify-content:flex-end;">
+    <button class="btn btn-ghost btn-sm" onclick="closeM('m-add-user')">Cancel</button>
+    <button class="btn btn-primary btn-sm" onclick="saveUser()">Save User</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══ MODAL: CHANGE PASSWORD ═══ -->
+<div class="overlay" id="m-change-pw">
+<div class="modal" style="max-width:380px;">
+  <div class="mh"><div class="mt">🔒 Change Password</div><button class="mc" onclick="closeM('m-change-pw')">✕</button></div>
+  <div class="fg" style="margin-bottom:12px;"><label>Current Password</label><input type="password" id="pw-current" placeholder="Enter current password"></div>
+  <div class="fg" style="margin-bottom:12px;"><label>New Password</label><input type="password" id="pw-new" placeholder="Min 6 characters"></div>
+  <div class="fg" style="margin-bottom:16px;"><label>Confirm New Password</label><input type="password" id="pw-confirm" placeholder="Repeat new password"></div>
+  <div id="pw-error" class="info-box ib-yellow" style="display:none;font-size:11px;"></div>
+  <div style="display:flex;gap:8px;justify-content:flex-end;">
+    <button class="btn btn-ghost btn-sm" onclick="closeM('m-change-pw')">Cancel</button>
+    <button class="btn btn-primary btn-sm" onclick="changePassword()">Update Password</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══ MODAL: VIEW ORDER ═══ -->
+<div class="overlay" id="m-view">
+<div class="modal modal-lg">
+  <div class="mh">
+    <div class="mt" id="view-title">Order Details</div>
+    <div style="display:flex;gap:7px;">
+      <button class="btn btn-outline btn-sm" onclick="editFromView()">✏️ Edit</button>
+      <button class="mc" onclick="closeM('m-view')">✕</button>
+    </div>
+  </div>
+  <div id="view-body"></div>
+</div>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+// ══════════════════════════════════════════════
+// AUTH & ROLES
+// ══════════════════════════════════════════════
+
+const ROLE_COLORS = { admin:'#92400e', accounts:'#1e40af', warehouse:'#7e22ce' };
+const ROLE_BG     = { admin:'#fef3c7', accounts:'#dbeafe', warehouse:'#f3e8ff' };
+const ROLE_BORDER = { admin:'#fde68a', accounts:'#bfdbfe', warehouse:'#e9d5ff' };
+const ROLE_LABEL  = { admin:'👑 Administrator', accounts:'💳 Accounts Team', warehouse:'🏭 Warehouse Team' };
+const ROLE_DESC   = {
+  admin:     'Full access to all features: create/edit/delete orders, upload PO files, manage all payment &amp; fulfilment columns, manage users and settings.',
+  accounts:  'Can update payment columns only — 30% deposit date, amount, TT reference and final payment details. All other fields are view-only.',
+  warehouse: 'Can update fulfilment columns only — production status, goods ready date, shipped, tracking, arrival and received. Payment columns are view-only.',
+};
+
+// Default users — stored in localStorage
+const DEFAULT_USERS = [
+  { id:'u1', name:'Admin',          username:'admin',     password:'admin123', role:'admin'     },
+  { id:'u2', name:'Accounts Team',  username:'accounts',  password:'pay2026',  role:'accounts'  },
+  { id:'u3', name:'Warehouse Team', username:'warehouse', password:'recv2026', role:'warehouse' },
+];
+
+let users = [];
+let currentUser = null;
+
+function loadUsers() {
+  let stored = JSON.parse(localStorage.getItem('sp_users') || 'null');
+  // Migrate: remove any legacy 'purchasing' role users, replace with DEFAULT_USERS if all gone
+  if (stored) {
+    stored = stored.filter(u => u.role !== 'purchasing');
+    if (stored.length === 0) stored = null;
+  }
+  users = stored || DEFAULT_USERS;
+}
+
+function saveUsers() { localStorage.setItem('sp_users', JSON.stringify(users)); }
+
+// Role-based can/cannot
+function can(action) {
+  if (!currentUser) return false;
+  const r = currentUser.role;
+  const perms = {
+    createOrder:    ['admin'],
+    deleteOrder:    ['admin'],
+    editOrderInfo:  ['admin'],
+    editPO:         ['admin'],
+    editPayments:   ['admin','accounts'],
+    editFulfilment: ['admin','warehouse'],
+    viewUsers:      ['admin'],
+    editSettings:   ['admin'],
+    editSuppliers:  ['admin'],
+  };
+  return (perms[action]||[]).includes(r);
+}
+
+// ══════════════════════════════════════════════
+// LOGIN
+// ══════════════════════════════════════════════
+
+function doLogin() {
+  loadUsers();
+  const username = document.getElementById('l-user').value.trim().toLowerCase();
+  const password = document.getElementById('l-pass').value;
+  const user = users.find(u => u.username.toLowerCase() === username && u.password === password);
+  if (!user) {
+    const err = document.getElementById('login-err');
+    err.style.display = 'flex';
+    document.getElementById('login-err-msg').textContent = 'Invalid username or password. Please try again.';
+    document.getElementById('l-pass').value = '';
+    document.getElementById('l-pass').focus();
+    return;
+  }
+  currentUser = user;
+  sessionStorage.setItem('sp_session', JSON.stringify({ id: user.id, role: user.role }));
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('main-app').style.display = 'block';
+  setupUIForRole();
+  renderAll();
+  toast(`Welcome back, ${user.name.split(' ')[0]}! 👋`, 'ok');
+}
+
+function doLogout() {
+  currentUser = null;
+  sessionStorage.removeItem('sp_session');
+  document.getElementById('main-app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('l-user').value = '';
+  document.getElementById('l-pass').value = '';
+  document.getElementById('login-err').style.display = 'none';
+}
+
+function restoreSession() {
+  loadUsers();
+  const sess = sessionStorage.getItem('sp_session');
+  if (!sess) return;
+  try {
+    const s = JSON.parse(sess);
+    const u = users.find(x => x.id === s.id);
+    if (u) {
+      currentUser = u;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('main-app').style.display = 'block';
+      setupUIForRole();
+      renderAll();
+    }
+  } catch(e) {}
+}
+
+function setupUIForRole() {
+  if (!currentUser) return;
+  const r = currentUser.role;
+
+  // Header user chip
+  document.getElementById('hdr-avatar').textContent = currentUser.name.charAt(0).toUpperCase();
+  document.getElementById('hdr-avatar').style.background = ROLE_COLORS[r];
+  document.getElementById('hdr-name').textContent = currentUser.name;
+  document.getElementById('hdr-role').textContent = ROLE_LABEL[r];
+
+  // Profile page
+  document.getElementById('profile-avatar').textContent = currentUser.name.charAt(0).toUpperCase();
+  document.getElementById('profile-avatar').style.background = ROLE_COLORS[r];
+  document.getElementById('profile-name').textContent = currentUser.name;
+  document.getElementById('profile-role-badge').innerHTML = roleBadgeHtml(r);
+
+  // New Order button visibility
+  const showNew = can('createOrder');
+  ['hdr-new-btn','dash-new-btn','ord-new-btn'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = showNew ? '' : 'none';
+  });
+
+  // Nav tabs
+  document.getElementById('nav-users').style.display    = can('viewUsers') ? '' : 'none';
+  document.getElementById('nav-settings').style.display = 'inline-flex'; // Everyone can see profile
+
+  // Settings sections
+  if (document.getElementById('admin-settings-company'))
+    document.getElementById('admin-settings-company').style.display = can('editSettings') ? '' : 'none';
+  if (document.getElementById('admin-settings-sups'))
+    document.getElementById('admin-settings-sups').style.display = can('editSuppliers') ? '' : 'none';
+  if (document.getElementById('admin-settings-data'))
+    document.getElementById('admin-settings-data').style.display = can('editSettings') ? '' : 'none';
+  if (document.getElementById('settings-save-btn'))
+    document.getElementById('settings-save-btn').style.display = can('editSettings') ? '' : 'none';
+}
+
+function roleBadgeHtml(r) {
+  return `<span style="background:${ROLE_BG[r]};color:${ROLE_COLORS[r]};border:1px solid ${ROLE_BORDER[r]};display:inline-flex;align-items:center;gap:3px;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;">${ROLE_LABEL[r]}</span>`;
+}
+
+// ══════════════════════════════════════════════
+// DATA STATE
+// ══════════════════════════════════════════════
+let orders=[], suppliers=[], reminders=[];
+let viewId=null, pendingFile=null;
+
+const SEED_SUPS=[
+  {name:'AQUA',email:'',country:'China'},{name:'PIKE',email:'',country:'China'},
+  {name:'MICHEL',email:'',country:'China'},{name:'HANMAN',email:'',country:'China'},
+  {name:'JULIA',email:'',country:'China'},{name:'CARRIE',email:'',country:'China'},
+  {name:'MERCURY',email:'',country:'China'},{name:'DAVID',email:'',country:'China'},
+  {name:'LEO',email:'',country:'China'},{name:'JESSIE',email:'',country:'China'},
+  {name:'JENNY',email:'',country:'China'},
+];
+
+const SEED_ORDERS=[
+  {id:'o1',sup:'AQUA',  mo:'January', goods:'Power Banks (X1,X3,X7)',                      placed:'2026-01-05',val:'',notes:'',po:null,p30d:'2026-01-05',p30a:'',p30r:'',p30c:'Yes',pfd:'',pfa:'',pfr:'',pfc:'',prod:'Yes',ready:'2026-03-09',ship:'YES',track:'',arriv:'2026-04-01',recv:'',rvdt:'',rvby:''},
+  {id:'o2',sup:'PIKE',  mo:'January', goods:'S26 Magsafe Clear, Star Balance & Ring Cases', placed:'2026-01-06',val:'',notes:'',po:null,p30d:'2026-01-06',p30a:'',p30r:'',p30c:'Yes',pfd:'',pfa:'',pfr:'',pfc:'',prod:'Yes',ready:'Star balance & Magsafe clear ready',ship:'To Vina',track:'',arriv:'',recv:'',rvdt:'',rvby:''},
+  {id:'o3',sup:'MICHEL',mo:'February',goods:'Screen Protectors',                            placed:'2026-02-27',val:'',notes:'',po:null,p30d:'2026-02-27',p30a:'',p30r:'',p30c:'Yes',pfd:'',pfa:'',pfr:'',pfc:'',prod:'Yes',ready:'by 31st March',ship:'',track:'',arriv:'',recv:'',rvdt:'',rvby:''},
+  {id:'o4',sup:'HANMAN',mo:'February',goods:'Hanaman Covers (iPhone, Samsung, Pixel)',      placed:'2026-02-26',val:'',notes:'',po:null,p30d:'2026-02-26',p30a:'',p30r:'',p30c:'Yes',pfd:'',pfa:'',pfr:'',pfc:'',prod:'Yes',ready:'by 27th March',ship:'',track:'',arriv:'',recv:'',rvdt:'',rvby:''},
+  {id:'o5',sup:'JULIA', mo:'March',   goods:'Mobile Phone Holders',                         placed:'2026-03-16',val:'',notes:'',po:null,p30d:'2026-03-16',p30a:'',p30r:'',p30c:'Yes',pfd:'',pfa:'',pfr:'',pfc:'',prod:'Yes',ready:'',ship:'',track:'',arriv:'',recv:'',rvdt:'',rvby:''},
+  {id:'o6',sup:'CARRIE',mo:'March',   goods:'Aluminum Stands',                              placed:'2026-03-16',val:'',notes:'',po:null,p30d:'2026-03-16',p30a:'',p30r:'',p30c:'Yes',pfd:'',pfa:'',pfr:'',pfc:'',prod:'Yes',ready:'',ship:'',track:'',arriv:'',recv:'',rvdt:'',rvby:''},
+  {id:'o7',sup:'JENNY', mo:'March',   goods:'Tough Cables, 33W Charger',                    placed:'',val:'',notes:'',po:null,p30d:'',p30a:'',p30r:'',p30c:'',pfd:'',pfa:'',pfr:'',pfc:'',prod:'',ready:'',ship:'',track:'',arriv:'',recv:'',rvdt:'',rvby:''},
+  {id:'o8',sup:'AQUA',  mo:'March',   goods:'X5 Power Bank',                                placed:'',val:'',notes:'',po:null,p30d:'',p30a:'',p30r:'',p30c:'',pfd:'',pfa:'',pfr:'',pfc:'',prod:'',ready:'',ship:'',track:'',arriv:'',recv:'',rvdt:'',rvby:''},
+];
+
+function init() {
+  suppliers = JSON.parse(localStorage.getItem('sp_s')||'null')||SEED_SUPS;
+  orders    = JSON.parse(localStorage.getItem('sp_o')||'null')||SEED_ORDERS;
+  reminders = JSON.parse(localStorage.getItem('sp_r')||'[]');
+  const d = new Date(); d.setDate(d.getDate()+1);
+  const ri = document.getElementById('rem-date'); if(ri) ri.value = d.toISOString().split('T')[0];
+}
+
+function save() {
+  localStorage.setItem('sp_s',JSON.stringify(suppliers));
+  localStorage.setItem('sp_o',JSON.stringify(orders));
+  localStorage.setItem('sp_r',JSON.stringify(reminders));
+}
+
+function renderAll() {
+  init();
+  renderDash(); renderOrders();
+  buildSupDrops(); renderSupChips(); buildMonthFilters(); renderRems(); renderUserList();
+}
+
+// ══════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════
+function go(p) {
+  if (p==='users' && !can('viewUsers')) { toast('Access denied — Admin only','err'); return; }
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.ntab').forEach(x=>x.classList.remove('on'));
+  document.getElementById('pg-'+p).classList.add('on');
+  const idx=['dashboard','orders','reminders','users','settings'].indexOf(p);
+  document.querySelectorAll('.ntab')[idx]?.classList.add('on');
+  if(p==='dashboard') renderDash();
+  if(p==='orders') renderOrders();
+  if(p==='reminders'){buildSupDrops();buildRemMsg();}
+  if(p==='users') renderUserList();
+}
+
+// ══════════════════════════════════════════════
+// STAGE HELPERS
+// ══════════════════════════════════════════════
+function stageOf(o) {
+  if(o.recv==='Yes'||o.recv==='YES') return 5;
+  if(o.arriv) return 4;
+  if(o.ship&&o.ship.trim()) return 3;
+  if(o.ready&&o.ready.trim()) return 2;
+  if(o.prod==='Yes'||o.prod==='YES') return 1;
+  if(o.p30c==='Yes') return 0.5;
+  return 0;
+}
+
+function stageBadge(o) {
+  const s=stageOf(o);
+  if(s>=5) return `<span class="badge bg">✅ Received</span>`;
+  if(s>=4) return `<span class="badge bb">🛬 Arrived</span>`;
+  if(s>=3) return `<span class="badge bb">🚢 Shipped</span>`;
+  if(s>=2) return `<span class="badge bo">📦 Ready</span>`;
+  if(s>=1) return `<span class="badge bb">🏭 Production</span>`;
+  if(s>=0.5) return `<span class="badge bo">💳 30% Paid</span>`;
+  return `<span class="badge bgr">⏳ Pending</span>`;
+}
+
+function pipeHtml(o) {
+  const s=stageOf(o); let h='<div class="pipe">';
+  for(let i=0;i<5;i++){
+    if(i>0) h+=`<div class="pl ${i<=s?'dn':'wt'}"></div>`;
+    const c=i<s?'dn':i===Math.floor(s)?'nw':'wt';
+    h+=`<div class="pd ${c}"></div>`;
+  }
+  return h+'</div>';
+}
+
+function isOverdue(o){ if(stageOf(o)>=5) return false; const d=new Date(o.ready); if(isNaN(d)) return false; return d<new Date(); }
+function fv(v){ return v&&String(v).trim()?v:'<span style="color:var(--grey2);">—</span>'; }
+function fvb(v){ if(v==='Yes'||v==='YES') return '<span class="badge bg">✅ Yes</span>'; if(v==='Partial') return '<span class="badge bo">⚠️ Partial</span>'; if(v) return `<span class="badge bgr">${v}</span>`; return '<span style="color:var(--grey2);">—</span>'; }
+
+// ══════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════
+function renderDash() {
+  document.getElementById('dash-sub').textContent=`Star Phones Australia Pty Ltd · ${orders.length} orders · ${new Date().toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})}`;
+  document.getElementById('s-tot').textContent=orders.length;
+  document.getElementById('s-pay').textContent=orders.filter(o=>!o.p30c||o.p30c!=='Yes').length;
+  document.getElementById('s-prd').textContent=orders.filter(o=>stageOf(o)===1).length;
+  document.getElementById('s-shp').textContent=orders.filter(o=>stageOf(o)===3).length;
+  document.getElementById('s-rcv').textContent=orders.filter(o=>stageOf(o)>=5).length;
+
+  const tb=document.getElementById('dash-tbody');
+  const list=orders.slice(-10).reverse();
+  tb.innerHTML=list.length?list.map(o=>`
+    <tr>
+      <td><span class="sn">${o.sup}</span>${isOverdue(o)?' <span style="font-size:11px;">⚠️</span>':''}</td>
+      <td style="color:var(--tx3);font-size:12px;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${o.goods||'<em style="color:var(--grey3)">—</em>'}</td>
+      <td><span class="badge bgr" style="font-size:10px;">${o.mo}</span></td>
+      <td>${o.p30c==='Yes'?`<span class="badge bg" style="font-size:10px;">✓ ${o.p30d||'Paid'}</span>`:`<span style="color:var(--grey2);font-size:11px;">—</span>`}</td>
+      <td>${stageBadge(o)}</td>
+      <td>${pipeHtml(o)}</td>
+      <td><button class="btn btn-ghost btn-icon btn-sm" onclick="viewOrder('${o.id}')">👁</button></td>
+    </tr>`).join('')
+  :'<tr><td colspan="7"><div class="empty"><div class="ei">📭</div><h3>No orders yet</h3><p>Click New Order to start</p></div></td></tr>';
+
+  const attn=orders.filter(o=>isOverdue(o)||(stageOf(o)<0.5));
+  document.getElementById('attn').innerHTML=attn.length?attn.slice(0,5).map(o=>`
+    <div style="display:flex;align-items:flex-start;gap:9px;margin-bottom:11px;">
+      <div style="width:7px;height:7px;border-radius:50%;background:${isOverdue(o)?'var(--rd)':'var(--or)'};margin-top:5px;flex-shrink:0;"></div>
+      <div>
+        <div style="font-weight:700;font-size:12px;">${o.sup}</div>
+        <div style="font-size:11px;color:var(--tx3);">${o.goods||'No goods set'}</div>
+        <div style="font-size:10px;color:var(--grey2);margin-top:1px;">${isOverdue(o)?'⚠️ Overdue':'⏳ No payment'} · ${o.mo}</div>
+      </div>
+    </div>`).join('')
+  :'<div class="empty" style="padding:18px 8px;"><div class="ei">😌</div><p>All good!</p></div>';
+
+  const sm={};
+  orders.forEach(o=>{ if(!sm[o.sup]) sm[o.sup]={t:0,d:0}; sm[o.sup].t++; if(stageOf(o)>=5) sm[o.sup].d++; });
+  document.getElementById('sup-sum').innerHTML=Object.entries(sm).map(([n,v])=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bdr);">
+      <span style="font-weight:700;font-size:12px;">${n}</span>
+      <div style="display:flex;align-items:center;gap:7px;">
+        <span style="font-size:11px;color:var(--tx3);">${v.d}/${v.t}</span>
+        <div style="width:48px;height:4px;background:var(--grey3);border-radius:2px;overflow:hidden;">
+          <div style="height:100%;width:${v.t?Math.round(v.d/v.t*100):0}%;background:var(--green2);border-radius:2px;"></div>
+        </div>
+      </div>
+    </div>`).join('')||'<div style="color:var(--grey2);font-size:12px;padding:5px 0;">No orders yet</div>';
+}
+
+// ══════════════════════════════════════════════
+// ORDERS TABLE
+// ══════════════════════════════════════════════
+let activeMonth='All';
+
+function buildMonthFilters() {
+  const el=document.getElementById('mfilters'); if(!el) return;
+  const months=[...new Set(orders.map(o=>o.mo).filter(Boolean))];
+  el.innerHTML=['All',...months].map(m=>
+    `<button class="fpill ${(m==='All'&&activeMonth==='All')||(m===activeMonth)?'on':''}" onclick="setMo('${m}',this)">${m}</button>`
+  ).join('');
+}
+
+function setMo(m,btn){ activeMonth=m; document.querySelectorAll('.fpill').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); renderOrders(); }
+
+function renderOrders() {
+  const q=(document.getElementById('ord-q')?.value||'').toLowerCase();
+  const list=orders.filter(o=>{
+    const mOk=activeMonth==='All'||o.mo===activeMonth;
+    const qOk=!q||(o.sup||'').toLowerCase().includes(q)||(o.goods||'').toLowerCase().includes(q)||(o.mo||'').toLowerCase().includes(q);
+    return mOk&&qOk;
+  });
+  document.getElementById('ord-sub').textContent=`${list.length} order${list.length!==1?'s':''} shown · ${orders.length} total`;
+  const tb=document.getElementById('ord-tbody');
+  if(!list.length){tb.innerHTML='<tr><td colspan="13"><div class="empty"><div class="ei">🔍</div><h3>No orders found</h3></div></td></tr>';return;}
+
+  tb.innerHTML=list.map(o=>{
+    const ov=isOverdue(o);
+    const poC=o.po?`<span class="badge bg" style="cursor:pointer;font-size:10px;" onclick="dlFile('${o.id}')">📊 ${o.po.name.substring(0,10)}…</span>`:`<span style="color:var(--grey2);font-size:11px;">—</span>`;
+    const p30=o.p30c==='Yes'?`<span class="badge bg" style="font-size:10px;">✓</span>`:(o.p30d?`<span class="badge bo" style="font-size:10px;">⏳</span>`:`<span style="color:var(--grey2);font-size:11px;">—</span>`);
+    const pf=o.pfc==='Yes'?`<span class="badge bg" style="font-size:10px;">✓</span>`:(o.pfd?`<span class="badge bo" style="font-size:10px;">⏳</span>`:`<span style="color:var(--grey2);font-size:11px;">—</span>`);
+    const pr=o.prod==='Yes'?`<span class="badge bg" style="font-size:10px;">✓</span>`:`<span style="color:var(--grey2);font-size:11px;">—</span>`;
+    const rd=o.ready?`<span style="font-size:11px;color:var(--tx2);">${o.ready}</span>`:`<span style="color:var(--grey2);font-size:11px;">—</span>`;
+    const sh=o.ship?`<span class="badge bb" style="font-size:10px;">${o.ship}</span>`:`<span style="color:var(--grey2);font-size:11px;">—</span>`;
+    const ar=o.arriv?`<span style="font-size:11px;">${o.arriv}</span>`:`<span style="color:var(--grey2);font-size:11px;">—</span>`;
+    const rc=o.recv==='Yes'?`<span class="badge bg" style="font-size:10px;">✅</span>`:o.recv==='Partial'?`<span class="badge bo" style="font-size:10px;">⚠️</span>`:`<span style="color:var(--grey2);font-size:11px;">—</span>`;
+    return `<tr>
+      <td><span class="sn">${o.sup}</span>${ov?' <span style="font-size:11px;">⚠️</span>':''}</td>
+      <td style="max-width:155px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--tx3);font-size:12px;">${o.goods||'—'}</td>
+      <td><span class="badge bgr" style="font-size:10px;">${o.mo}</span></td>
+      <td>${poC}</td><td>${p30}</td><td>${pf}</td><td>${pr}</td><td>${rd}</td><td>${sh}</td><td>${ar}</td><td>${rc}</td>
+      <td>${stageBadge(o)}</td>
+      <td>
+        <div style="display:flex;gap:3px;">
+          <button class="btn btn-ghost btn-icon btn-sm" title="View"   onclick="viewOrder('${o.id}')">👁</button>
+          ${can('editOrderInfo')||can('editPayments')||can('editFulfilment')?`<button class="btn btn-ghost btn-icon btn-sm" title="Edit" onclick="editOrder('${o.id}')">✏️</button>`:''}
+          <button class="btn btn-ghost btn-icon btn-sm" title="Remind" onclick="quickRem('${o.id}')">📧</button>
+          ${can('deleteOrder')?`<button class="btn btn-ghost btn-icon btn-sm" title="Delete" style="color:var(--rd);" onclick="delOrder('${o.id}')">🗑</button>`:''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+// VIEW ORDER
+// ══════════════════════════════════════════════
+function viewOrder(id) {
+  const o=orders.find(x=>x.id===id); if(!o) return;
+  viewId=id;
+  document.getElementById('view-title').textContent=`📦 ${o.sup} — ${o.goods||o.mo}`;
+  document.getElementById('view-body').innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;flex-wrap:wrap;gap:8px;">
+      ${stageBadge(o)}<div style="display:flex;align-items:center;gap:5px;">${pipeHtml(o)}<span style="font-size:10px;color:var(--grey2);margin-left:3px;">Pipeline</span></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+      <div style="background:var(--grey5);border:1px solid var(--bdr);border-radius:9px;padding:13px;">
+        <div style="font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">📋 Order Info</div>
+        <div style="display:flex;flex-direction:column;gap:5px;font-size:12px;">
+          <div><span style="color:var(--tx3);font-weight:600;">Supplier:</span> <strong>${o.sup}</strong></div>
+          <div><span style="color:var(--tx3);font-weight:600;">Goods:</span> ${fv(o.goods)}</div>
+          <div><span style="color:var(--tx3);font-weight:600;">Month:</span> ${o.mo}</div>
+          <div><span style="color:var(--tx3);font-weight:600;">Placed:</span> ${fv(o.placed)}</div>
+          <div><span style="color:var(--tx3);font-weight:600;">Value:</span> ${fv(o.val)}</div>
+          ${o.notes?`<div><span style="color:var(--tx3);font-weight:600;">Notes:</span> ${o.notes}</div>`:''}
+        </div>
+      </div>
+      <div style="background:var(--grey5);border:1px solid var(--bdr);border-radius:9px;padding:13px;">
+        <div style="font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">📁 PO File</div>
+        ${o.po?`<div class="fc" style="cursor:pointer;" onclick="dlFile('${o.id}')"><span>📊</span><span class="fcn">${o.po.name}</span><span style="font-size:10px;color:var(--grey2);">${(o.po.size/1024).toFixed(1)}KB ⬇</span></div>`:'<span style="color:var(--grey2);font-size:12px;">No PO file attached</span>'}
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div style="background:var(--grey5);border:1px solid var(--bdr);border-radius:9px;padding:13px;">
+        <div style="font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">💳 Payments</div>
+        <div style="display:flex;flex-direction:column;gap:4px;font-size:12px;">
+          <div style="font-weight:700;font-size:10px;color:var(--tx3);margin-bottom:2px;">30% DEPOSIT</div>
+          <div><span style="color:var(--tx3);">Date:</span> ${fv(o.p30d)}</div>
+          <div><span style="color:var(--tx3);">Amount:</span> ${fv(o.p30a)}</div>
+          <div><span style="color:var(--tx3);">Ref:</span> ${fv(o.p30r)}</div>
+          <div><span style="color:var(--tx3);">Confirmed:</span> ${fvb(o.p30c)}</div>
+          <div class="divider"></div>
+          <div style="font-weight:700;font-size:10px;color:var(--tx3);margin-bottom:2px;">FINAL PAYMENT</div>
+          <div><span style="color:var(--tx3);">Date:</span> ${fv(o.pfd)}</div>
+          <div><span style="color:var(--tx3);">Amount:</span> ${fv(o.pfa)}</div>
+          <div><span style="color:var(--tx3);">Ref:</span> ${fv(o.pfr)}</div>
+          <div><span style="color:var(--tx3);">Confirmed:</span> ${fvb(o.pfc)}</div>
+        </div>
+      </div>
+      <div style="background:var(--grey5);border:1px solid var(--bdr);border-radius:9px;padding:13px;">
+        <div style="font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">🚚 Fulfilment</div>
+        <div style="display:flex;flex-direction:column;gap:4px;font-size:12px;">
+          <div><span style="color:var(--tx3);">In Production:</span> ${fvb(o.prod)}</div>
+          <div><span style="color:var(--tx3);">Goods Ready:</span> ${fv(o.ready)}</div>
+          <div><span style="color:var(--tx3);">Shipped:</span> ${fv(o.ship)}</div>
+          <div><span style="color:var(--tx3);">Tracking:</span> ${fv(o.track)}</div>
+          <div><span style="color:var(--tx3);">Arrival:</span> ${fv(o.arriv)}</div>
+          <div class="divider"></div>
+          <div><span style="color:var(--tx3);">Received:</span> ${fvb(o.recv)}</div>
+          <div><span style="color:var(--tx3);">Recv Date:</span> ${fv(o.rvdt)}</div>
+          <div><span style="color:var(--tx3);">Recv By:</span> ${fv(o.rvby)}</div>
+        </div>
+      </div>
+    </div>`;
+  openM('m-view');
+}
+
+function editFromView(){ closeM('m-view'); if(viewId) editOrder(viewId); }
+
+// ══════════════════════════════════════════════
+// NEW / EDIT ORDER (with role-based field locking)
+// ══════════════════════════════════════════════
+function applyFieldPermissions() {
+  const payFields = ['f-p30d','f-p30a','f-p30r','f-p30c','f-pfd','f-pfa','f-pfr','f-pfc'];
+  const fulFields = ['f-prod','f-ready','f-ship','f-track','f-arriv','f-recv','f-rvdt','f-rvby'];
+  const orderFields = ['f-sup','f-mo','f-goods','f-placed','f-val','f-notes'];
+  const canPay = can('editPayments');
+  const canFul = can('editFulfilment');
+  const canOrder = can('editOrderInfo');
+  const canPO = can('editPO');
+
+  orderFields.forEach(id=>{ const el=document.getElementById(id); if(el) el.disabled=!canOrder; });
+  payFields.forEach(id=>{ const el=document.getElementById(id); if(el) el.disabled=!canPay; });
+  fulFields.forEach(id=>{ const el=document.getElementById(id); if(el) el.disabled=!canFul; });
+
+  // DZ drop zone
+  const dz=document.getElementById('dz-po');
+  if(dz){ dz.style.cursor=canPO?'pointer':'not-allowed'; dz.style.opacity=canPO?'1':'0.5'; dz.onclick=canPO?()=>document.getElementById('fi-po').click():null; }
+
+  // Permission notice
+  const n=document.getElementById('perm-notice-order');
+  if(!canOrder) {
+    const r = currentUser.role;
+    const editableDesc = r==='accounts'
+      ? 'only the <strong>Payments tab</strong> (30% deposit &amp; final payment)'
+      : r==='warehouse'
+      ? 'only the <strong>Fulfilment tab</strong> (production, shipping &amp; received)'
+      : 'view only';
+    n.innerHTML=`<div class="info-box ib-yellow" style="font-size:11px;margin-bottom:14px;">🔒 <strong>${ROLE_LABEL[r]}</strong> — you can edit ${editableDesc}. All other fields are locked and shown in read-only mode.</div>`;
+    // Auto-switch to the relevant tab
+    if(r==='accounts') stab(2);
+    else if(r==='warehouse') stab(3);
+  } else { n.innerHTML=''; }
+
+  // Info box text
+  if(!canPO) document.getElementById('po-info-box').innerHTML='🔒 PO file upload is managed by <strong>Admin</strong> only. You can view attached files below.';
+  else document.getElementById('po-info-box').innerHTML='📊 Upload the <strong>Purchase Order (PO) Excel file</strong> you send to the supplier.';
+  if(!canPay) document.getElementById('pay-info-box').innerHTML='🔒 Payment columns are managed by the <strong>Accounts Team</strong>. Fields are read-only for your role.';
+  else document.getElementById('pay-info-box').innerHTML='🏦 <strong>Accounts Team:</strong> Update payment milestones once processed.';
+  if(!canFul) document.getElementById('ful-info-box').innerHTML='🔒 Fulfilment columns are managed by the <strong>Warehouse Team</strong>. Fields are read-only for your role.';
+  else document.getElementById('ful-info-box').innerHTML='🏭 <strong>Warehouse Team:</strong> Update production, shipping and arrival details.';
+}
+
+function openNew() {
+  if(!can('createOrder')){ toast('Access denied — Admin only','err'); return; }
+  pendingFile=null;
+  document.getElementById('edit-id').value='';
+  document.getElementById('m-order-title').textContent='📦 New Order';
+  clearForm(); stab(0); setSteps(-1); applyFieldPermissions(); openM('m-order');
+}
+
+function editOrder(id) {
+  const o=orders.find(x=>x.id===id); if(!o) return;
+  if(!can('editOrderInfo')&&!can('editPayments')&&!can('editFulfilment')){ toast('Access denied','err'); return; }
+  pendingFile=o.po||null;
+  document.getElementById('edit-id').value=id;
+  document.getElementById('m-order-title').textContent=`✏️ Edit Order — ${o.sup}`;
+  document.getElementById('f-sup').value=o.sup||'';
+  document.getElementById('f-mo').value=o.mo||'March';
+  document.getElementById('f-goods').value=o.goods||'';
+  document.getElementById('f-placed').value=o.placed||'';
+  document.getElementById('f-val').value=o.val||'';
+  document.getElementById('f-notes').value=o.notes||'';
+  document.getElementById('f-p30d').value=o.p30d||'';
+  document.getElementById('f-p30a').value=o.p30a||'';
+  document.getElementById('f-p30r').value=o.p30r||'';
+  document.getElementById('f-p30c').value=o.p30c||'';
+  document.getElementById('f-pfd').value=o.pfd||'';
+  document.getElementById('f-pfa').value=o.pfa||'';
+  document.getElementById('f-pfr').value=o.pfr||'';
+  document.getElementById('f-pfc').value=o.pfc||'';
+  document.getElementById('f-prod').value=o.prod||'';
+  document.getElementById('f-ready').value=o.ready||'';
+  document.getElementById('f-ship').value=o.ship||'';
+  document.getElementById('f-track').value=o.track||'';
+  document.getElementById('f-arriv').value=o.arriv||'';
+  document.getElementById('f-recv').value=o.recv||'';
+  document.getElementById('f-rvdt').value=o.rvdt||'';
+  document.getElementById('f-rvby').value=o.rvby||'';
+  showPOPrev(o.po);
+  stab(0); setSteps(stageOf(o)); applyFieldPermissions(); openM('m-order');
+}
+
+function clearForm() {
+  ['f-goods','f-placed','f-val','f-notes','f-p30d','f-p30a','f-p30r','f-p30c',
+   'f-pfd','f-pfa','f-pfr','f-pfc','f-prod','f-ready','f-ship','f-track',
+   'f-arriv','f-recv','f-rvdt','f-rvby'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('f-mo').value='March';
+  document.getElementById('f-sup').value='';
+  document.getElementById('po-prev').innerHTML='';
+  document.getElementById('po-tbl').innerHTML='';
+  document.getElementById('fi-po').value='';
+}
+
+function saveOrder() {
+  const sup=document.getElementById('f-sup').value;
+  if(!sup){toast('Please select a supplier','err');return;}
+  const eid=document.getElementById('edit-id').value;
+  const existing = eid ? orders.find(x=>x.id===eid) : null;
+
+  // Merge: only update fields the user has permission to edit
+  const base = existing || {};
+  const o = {
+    id: eid||'o'+Date.now(),
+    sup:    can('editOrderInfo') ? sup : (base.sup||sup),
+    mo:     can('editOrderInfo') ? document.getElementById('f-mo').value    : base.mo,
+    goods:  can('editOrderInfo') ? document.getElementById('f-goods').value.trim() : base.goods,
+    placed: can('editOrderInfo') ? document.getElementById('f-placed').value       : base.placed,
+    val:    can('editOrderInfo') ? document.getElementById('f-val').value.trim()   : base.val,
+    notes:  can('editOrderInfo') ? document.getElementById('f-notes').value.trim() : base.notes,
+    po:     can('editPO')        ? pendingFile : (base.po||null),
+    p30d:   can('editPayments')  ? document.getElementById('f-p30d').value : base.p30d,
+    p30a:   can('editPayments')  ? document.getElementById('f-p30a').value.trim() : base.p30a,
+    p30r:   can('editPayments')  ? document.getElementById('f-p30r').value.trim() : base.p30r,
+    p30c:   can('editPayments')  ? document.getElementById('f-p30c').value : base.p30c,
+    pfd:    can('editPayments')  ? document.getElementById('f-pfd').value : base.pfd,
+    pfa:    can('editPayments')  ? document.getElementById('f-pfa').value.trim() : base.pfa,
+    pfr:    can('editPayments')  ? document.getElementById('f-pfr').value.trim() : base.pfr,
+    pfc:    can('editPayments')  ? document.getElementById('f-pfc').value : base.pfc,
+    prod:   can('editFulfilment')? document.getElementById('f-prod').value : base.prod,
+    ready:  can('editFulfilment')? document.getElementById('f-ready').value.trim() : base.ready,
+    ship:   can('editFulfilment')? document.getElementById('f-ship').value.trim()  : base.ship,
+    track:  can('editFulfilment')? document.getElementById('f-track').value.trim() : base.track,
+    arriv:  can('editFulfilment')? document.getElementById('f-arriv').value : base.arriv,
+    recv:   can('editFulfilment')? document.getElementById('f-recv').value : base.recv,
+    rvdt:   can('editFulfilment')? document.getElementById('f-rvdt').value : base.rvdt,
+    rvby:   can('editFulfilment')? document.getElementById('f-rvby').value.trim() : base.rvby,
+  };
+
+  if(eid){ const i=orders.findIndex(x=>x.id===eid); if(i>=0) orders[i]=o; else orders.push(o); toast(`${sup} order updated ✓`,'ok'); }
+  else   { orders.push(o); toast(`New order for ${sup} created ✓`,'ok'); }
+  save(); closeM('m-order'); renderAll();
+}
+
+function delOrder(id) {
+  if(!can('deleteOrder')){ toast('Access denied — Admin only','err'); return; }
+  const o=orders.find(x=>x.id===id);if(!o)return;
+  if(!confirm(`Delete order for ${o.sup}?`))return;
+  orders=orders.filter(x=>x.id!==id); save(); renderAll(); toast('Order deleted','info');
+}
+
+// ══════════════════════════════════════════════
+// TABS / STEPS
+// ══════════════════════════════════════════════
+function stab(i){ document.querySelectorAll('.it').forEach((t,j)=>t.classList.toggle('on',j===i)); [0,1,2,3].forEach(j=>{const el=document.getElementById('t'+j);if(el)el.style.display=j===i?'block':'none';}); }
+function setSteps(s){ for(let i=0;i<5;i++){const el=document.getElementById('stp'+i);if(!el)continue;el.className='stp '+(i<s?'dn':i===Math.ceil(Math.max(s,0))?'nw':'wt');} }
+
+// ══════════════════════════════════════════════
+// FILE HANDLING
+// ══════════════════════════════════════════════
+function dzO(e,id){e.preventDefault();document.getElementById(id).classList.add('ov');}
+function dzL(id){document.getElementById(id).classList.remove('ov');}
+function dzD(e){e.preventDefault();dzL('dz-po');if(!can('editPO')){toast('Access denied — Admin only','err');return;}const f=e.dataTransfer.files[0];if(f)processF(f);}
+function handleF(e){if(!can('editPO')){toast('Access denied — Admin only','err');return;}const f=e.target.files[0];if(f)processF(f);}
+
+function processF(file) {
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const fo={name:file.name,size:file.size,data:e.target.result,mime:file.type};
+    pendingFile=fo; showPOPrev(fo);
+    if(file.name.match(/\.(xlsx|xls|csv)$/i)){
+      try{
+        const wb=XLSX.read(e.target.result,{type:'binary'});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''}).slice(0,7);
+        if(rows.length){
+          const th=rows[0].map(c=>`<th>${c||''}</th>`).join('');
+          const tb=rows.slice(1).map(r=>`<tr>${r.map(c=>`<td>${c||''}</td>`).join('')}</tr>`).join('');
+          document.getElementById('po-tbl').innerHTML=`<div style="font-size:11px;color:var(--tx3);font-weight:600;margin-bottom:5px;">📊 File Preview</div><div style="border:1px solid var(--bdr);border-radius:8px;overflow-x:auto;"><table class="mtbl"><thead><tr>${th}</tr></thead><tbody>${tb}</tbody></table></div>`;
+        }
+      }catch(err){}
+    }
+    toast(`PO attached: ${file.name}`,'ok');
+  };
+  if(file.name.match(/\.(xlsx|xls)$/i)) reader.readAsBinaryString(file);
+  else reader.readAsDataURL(file);
+}
+
+function showPOPrev(fo){ const el=document.getElementById('po-prev');if(!el)return;if(!fo){el.innerHTML='';return;} el.innerHTML=`<div class="fc"><span>📊</span><span class="fcn">${fo.name}</span><span style="font-size:10px;color:var(--grey2);">${(fo.size/1024).toFixed(1)}KB</span><button class="fcr" onclick="removePO()">✕</button></div>`; }
+function removePO(){ pendingFile=null; document.getElementById('po-prev').innerHTML=''; document.getElementById('po-tbl').innerHTML=''; document.getElementById('fi-po').value=''; }
+function dlFile(id){ const o=orders.find(x=>x.id===id);if(!o||!o.po)return;const a=document.createElement('a');a.href=o.po.data;a.download=o.po.name;a.click(); }
+
+// ══════════════════════════════════════════════
+// SUPPLIERS
+// ══════════════════════════════════════════════
+function buildSupDrops() {
+  ['f-sup','rem-sup'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    const cur=el.value;
+    el.innerHTML='<option value="">— Pick from saved list —</option>'+
+      suppliers.map(s=>`<option value="${s.name}">${s.name}${s.country?' ('+s.country+')':''}</option>`).join('');
+    if(cur)el.value=cur;
+  });
+}
+
+function renderSupChips() {
+  const el=document.getElementById('sup-chips');if(!el)return;
+  if(!can('editSuppliers')){ el.innerHTML='<span style="color:var(--grey2);font-size:12px;">'+suppliers.map(s=>s.name).join(', ')+'</span>'; return; }
+  el.innerHTML=suppliers.map((s,i)=>`
+    <div style="display:inline-flex;align-items:center;gap:6px;background:var(--grey5);border:1px solid var(--bdr);border-radius:6px;padding:4px 9px;">
+      <span style="font-weight:700;font-size:12px;">${s.name}</span>
+      ${s.country?`<span style="font-size:10px;color:var(--grey2);">${s.country}</span>`:''}
+      <button style="background:none;border:none;cursor:pointer;color:var(--grey2);font-size:12px;padding:0;" onclick="delSup(${i})">✕</button>
+    </div>`).join('');
+}
+
+function openAddSup(){ if(!can('editSuppliers')){toast('Admin only','err');return;} openM('m-sup'); }
+
+function addSup() {
+  const name=document.getElementById('ns-name').value.trim().toUpperCase();
+  if(!name){toast('Enter supplier name','err');return;}
+  if(suppliers.find(s=>s.name===name)){toast('Already exists','err');return;}
+  suppliers.push({name,email:document.getElementById('ns-email').value.trim(),country:document.getElementById('ns-country').value.trim()});
+  save();buildSupDrops();renderSupChips();closeM('m-sup');
+  ['ns-name','ns-email','ns-country'].forEach(id=>document.getElementById(id).value='');
+  toast(`Supplier ${name} added ✓`,'ok');
+}
+
+function delSup(i){ if(!can('editSuppliers')){toast('Admin only','err');return;} if(!confirm(`Remove "${suppliers[i].name}"?`))return; suppliers.splice(i,1);save();buildSupDrops();renderSupChips();toast('Supplier removed','info'); }
+
+// ══════════════════════════════════════════════
+// USER MANAGEMENT
+// ══════════════════════════════════════════════
+function renderUserList() {
+  const el=document.getElementById('user-list');if(!el)return;
+  const cnt=document.getElementById('user-count');if(cnt)cnt.textContent=`${users.length} members`;
+  el.innerHTML=users.map((u,i)=>`
+    <div class="user-row">
+      <div class="ua" style="background:${ROLE_COLORS[u.role]};">${u.name.charAt(0)}</div>
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:13px;">${u.name} ${u.id===currentUser?.id?'<span style="font-size:10px;color:var(--grey2);">(you)</span>':''}</div>
+        <div style="font-size:11px;color:var(--tx3);">@${u.username}</div>
+      </div>
+      <div>${roleBadgeHtml(u.role)}</div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-ghost btn-sm" onclick="editUser(${i})">✏️ Edit</button>
+        ${u.id!==currentUser?.id?`<button class="btn btn-ghost btn-sm" style="color:var(--rd);border-color:rgba(239,68,68,.25);" onclick="removeUser(${i})">🗑</button>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function openAddUser() {
+  if(!can('viewUsers')){toast('Admin only','err');return;}
+  document.getElementById('edit-user-idx').value='';
+  document.getElementById('m-user-title').textContent='➕ Add Team Member';
+  ['u-name','u-username','u-pass'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('u-role').value='accounts';
+  updateRoleDesc();
+  openM('m-add-user');
+}
+
+function editUser(i) {
+  const u=users[i];
+  document.getElementById('edit-user-idx').value=i;
+  document.getElementById('m-user-title').textContent=`✏️ Edit User — ${u.name}`;
+  document.getElementById('u-name').value=u.name;
+  document.getElementById('u-username').value=u.username;
+  document.getElementById('u-pass').value='';
+  document.getElementById('u-role').value=u.role;
+  updateRoleDesc();
+  openM('m-add-user');
+}
+
+function updateRoleDesc() {
+  const r=document.getElementById('u-role')?.value||'accounts';
+  const el=document.getElementById('role-desc-box');
+  if(el) el.innerHTML=`<strong>${ROLE_LABEL[r]}:</strong> ${ROLE_DESC[r]}`;
+}
+
+document.getElementById('u-role')?.addEventListener('change', updateRoleDesc);
+
+function saveUser() {
+  const name=document.getElementById('u-name').value.trim();
+  const username=document.getElementById('u-username').value.trim().toLowerCase();
+  const pass=document.getElementById('u-pass').value;
+  const role=document.getElementById('u-role').value;
+  if(!name||!username){toast('Name and username required','err');return;}
+  const idx=document.getElementById('edit-user-idx').value;
+
+  if(idx!=='') {
+    // Edit
+    const i=parseInt(idx);
+    if(pass&&pass.length<6){toast('Password must be at least 6 characters','err');return;}
+    const dup=users.find((u,j)=>j!==i&&u.username===username);
+    if(dup){toast('Username already taken','err');return;}
+    users[i].name=name; users[i].username=username; users[i].role=role;
+    if(pass) users[i].password=pass;
+    toast(`${name} updated ✓`,'ok');
+  } else {
+    // New
+    if(!pass||pass.length<6){toast('Password must be at least 6 characters','err');return;}
+    if(users.find(u=>u.username===username)){toast('Username already taken','err');return;}
+    users.push({id:'u'+Date.now(),name,username,password:pass,role});
+    toast(`${name} added ✓`,'ok');
+  }
+  saveUsers(); closeM('m-add-user'); renderUserList();
+}
+
+function removeUser(i) {
+  if(users[i].id===currentUser?.id){toast('Cannot delete your own account','err');return;}
+  if(!confirm(`Remove user "${users[i].name}"?`))return;
+  users.splice(i,1); saveUsers(); renderUserList(); toast('User removed','info');
+}
+
+// ══════════════════════════════════════════════
+// CHANGE PASSWORD
+// ══════════════════════════════════════════════
+function openChangePw(){ document.getElementById('pw-current').value=''; document.getElementById('pw-new').value=''; document.getElementById('pw-confirm').value=''; document.getElementById('pw-error').style.display='none'; openM('m-change-pw'); }
+
+function changePassword() {
+  const cur=document.getElementById('pw-current').value;
+  const nw=document.getElementById('pw-new').value;
+  const con=document.getElementById('pw-confirm').value;
+  const errEl=document.getElementById('pw-error');
+  const show=(msg)=>{ errEl.innerHTML=msg; errEl.style.display='block'; };
+  if(cur!==currentUser.password){show('Current password is incorrect.');return;}
+  if(nw.length<6){show('New password must be at least 6 characters.');return;}
+  if(nw!==con){show('Passwords do not match.');return;}
+  const i=users.findIndex(u=>u.id===currentUser.id);
+  if(i>=0){ users[i].password=nw; currentUser.password=nw; }
+  saveUsers(); closeM('m-change-pw'); toast('Password updated ✓','ok');
+}
+
+// ══════════════════════════════════════════════
+// REMINDERS
+// ══════════════════════════════════════════════
+function buildRemMsg() {
+  const sup=document.getElementById('rem-sup')?.value||'';
+  const type=document.getElementById('rem-type')?.value||'pl';
+  const co=document.getElementById('cfg-co')?.value||'Star Phones Australia Pty Ltd';
+  const o=orders.filter(x=>x.sup===sup).at(-1);
+  const gd=o?.goods?` for ${o.goods}`:'';
+  const mo=o?.mo||'the recent period';
+  const M={
+    pl:`Dear ${sup||'Supplier'},\n\nI hope you are doing well.\n\nWe are following up on our recent order${gd} placed in ${mo}.\n\nCould you please send through the Proforma Invoice (PL) so our accounts team can process the 30% deposit payment promptly.\n\nKind regards,\nAdmin Team\n${co}`,
+    payment30:`Dear ${sup||'Supplier'},\n\nThank you for sending through the Proforma Invoice${gd}.\n\nWe would like to confirm our 30% deposit payment has been processed. Please confirm receipt and advise on the expected production commencement date.\n\nBest regards,\n${co}`,
+    paymentfinal:`Dear ${sup||'Supplier'},\n\nWe would like to follow up on the final / balance payment for our order${gd}.\n\nPlease confirm the outstanding balance and banking details so we can process this promptly.\n\nKind regards,\n${co}`,
+    production:`Dear ${sup||'Supplier'},\n\nWe are checking on the production progress for our order${gd} placed in ${mo}.\n\nCould you please provide an update and the expected goods-ready date?\n\nThank you,\n${co}`,
+    ready:`Dear ${sup||'Supplier'},\n\nWe would like to check if our goods${gd} are ready for shipment.\n\nPlease confirm readiness and provide the packing list and intended shipping date.\n\nThanks,\n${co}`,
+    shipping:`Dear ${sup||'Supplier'},\n\nCould you please provide a shipping update for our order${gd}?\n\nWe need the tracking number, carrier name, and estimated delivery date to Australia.\n\nKind regards,\n${co}`,
+    arrival:`Dear ${sup||'Supplier'},\n\nOur goods${gd} have arrived at our Australian warehouse and are under inspection.\n\nThank you for your partnership.\n\n${co} Warehouse Team`,
+    custom:`Dear ${sup||'Supplier'},\n\n[Write your message here]\n\nBest regards,\n${co}`,
+  };
+  const ta=document.getElementById('rem-msg');if(ta)ta.value=M[type]||M.custom;
+}
+
+function clearRem(){ document.getElementById('rem-sup').value=''; document.getElementById('rem-email').value=''; document.getElementById('rem-type').value='pl'; buildRemMsg(); }
+
+function saveRem() {
+  const sup=document.getElementById('rem-sup').value,email=document.getElementById('rem-email').value;
+  if(!sup||!email){toast('Select supplier and enter email','err');return;}
+  reminders.push({sup,email,type:document.getElementById('rem-type').value,date:document.getElementById('rem-date').value,msg:document.getElementById('rem-msg').value,status:'queued',created:new Date().toISOString(),by:currentUser?.name||''});
+  save();renderRems();toast(`Reminder for ${sup} queued ✓`,'ok');
+}
+
+function sendGmail() {
+  const sup=document.getElementById('rem-sup').value,email=document.getElementById('rem-email').value,msg=document.getElementById('rem-msg').value,type=document.getElementById('rem-type').value;
+  const co=document.getElementById('cfg-co')?.value||'Star Phones Australia Pty Ltd';
+  if(!sup||!email){toast('Select supplier and enter email','err');return;}
+  const subs={pl:'PL Request',payment30:'30% Payment Follow-up',paymentfinal:'Final Payment Follow-up',production:'Production Update',ready:'Goods Ready Confirmation',shipping:'Shipping Update',arrival:'Arrival Confirmation',custom:'Order Update'};
+  window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(email)}&su=${encodeURIComponent('['+co+'] '+subs[type]+' — '+sup)}&body=${encodeURIComponent(msg)}`,'_blank');
+  reminders.push({sup,email,type,date:new Date().toISOString().split('T')[0],msg,status:'sent',created:new Date().toISOString(),by:currentUser?.name||''});
+  save();renderRems();toast(`Gmail opened for ${sup} 📧`,'ok');
+}
+
+function quickRem(id){ const o=orders.find(x=>x.id===id);if(!o)return; go('reminders'); setTimeout(()=>{document.getElementById('rem-sup').value=o.sup;buildRemMsg();toast(`Pre-filled for ${o.sup}`,'info');},120); }
+
+function renderRems() {
+  const el=document.getElementById('rem-queue');if(!el)return;
+  const cn=document.getElementById('rem-cnt');if(cn)cn.textContent=reminders.length?`(${reminders.length})`:'';
+  if(!reminders.length){el.innerHTML='<div class="empty"><div class="ei">📭</div><h3>No reminders queued</h3><p>Create one above</p></div>';return;}
+  const icons={pl:'📄',payment30:'💳',paymentfinal:'💳',production:'🏭',ready:'📦',shipping:'🚢',arrival:'✅',custom:'✍️'};
+  el.innerHTML=reminders.slice().reverse().map((r,i)=>{
+    const ri=reminders.length-1-i;
+    return `<div style="background:var(--white);border:1px solid var(--bdr);border-radius:var(--r);padding:11px 15px;display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;box-shadow:var(--sh);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:30px;height:30px;border-radius:7px;background:var(--grey5);border:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">${icons[r.type]||'📧'}</div>
+        <div>
+          <div style="font-weight:700;font-size:13px;">${r.sup}</div>
+          <div style="font-size:11px;color:var(--tx3);">${r.email}${r.by?` · by ${r.by}`:''}</div>
+          <div style="font-size:11px;color:var(--grey2);font-style:italic;">"${r.msg.split('\n')[0].substring(0,55)}…"</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
+        <span class="badge ${r.status==='sent'?'bg':'bo'}">${r.status==='sent'?'✓ Sent':'⏳ Queued'}</span>
+        <span style="font-size:11px;color:var(--grey2);">${r.date}</span>
+        <button class="btn btn-ghost btn-icon btn-sm" onclick="resendRem(${ri})">📧</button>
+        <button class="btn btn-ghost btn-icon btn-sm" style="color:var(--rd);" onclick="delRem(${ri})">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function resendRem(i){ const r=reminders[i];const co=document.getElementById('cfg-co')?.value||'Star Phones Australia Pty Ltd';window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(r.email)}&su=${encodeURIComponent('['+co+'] Order Update — '+r.sup)}&body=${encodeURIComponent(r.msg)}`,'_blank');reminders[i].status='sent';save();renderRems();toast(`Gmail opened for ${r.sup}`,'ok'); }
+function delRem(i){ reminders.splice(i,1);save();renderRems();toast('Removed','info'); }
+
+// ══════════════════════════════════════════════
+// EXPORT / DATA
+// ══════════════════════════════════════════════
+function exportCSV() {
+  const H=['Supplier','Goods','Month','Placed','Value','PO File','30% Date','30% Amount','30% Ref','30% Confirmed','Final Date','Final Amount','Final Ref','Final Confirmed','Production','Goods Ready','Shipped','Tracking','Arrival','Received','Received Date','Received By'];
+  const R=orders.map(o=>[o.sup,o.goods,o.mo,o.placed,o.val,o.po?o.po.name:'',o.p30d,o.p30a,o.p30r,o.p30c,o.pfd,o.pfa,o.pfr,o.pfc,o.prod,o.ready,o.ship,o.track,o.arriv,o.recv,o.rvdt,o.rvby]);
+  const csv=[H,...R].map(r=>r.map(c=>`"${(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='StarPhones_Orders.csv';a.click();
+  toast('CSV exported ✓','ok');
+}
+
+function clearAll(){ if(!can('editSettings')){toast('Admin only','err');return;} if(!confirm('Clear ALL orders?'))return;orders=[];save();renderAll();toast('All orders cleared','info'); }
+
+// ══════════════════════════════════════════════
+// MODAL / TOAST UTILS
+// ══════════════════════════════════════════════
+function openM(id){ document.getElementById(id).classList.add('open'); }
+function closeM(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('open'); }));
+
+function toast(msg,type='info'){
+  const ic={ok:'✅',err:'❌',info:'ℹ️'};
+  const el=document.createElement('div');el.className='toast';
+  el.innerHTML=`<span>${ic[type]||'ℹ️'}</span><span>${msg}</span>`;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(()=>{el.style.cssText='opacity:0;transform:translateX(12px);transition:all .25s;';setTimeout(()=>el.remove(),260);},3000);
+}
+
+// ══════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════
+restoreSession();
+</script>
+</body>
+</html>
