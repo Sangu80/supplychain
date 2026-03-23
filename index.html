@@ -782,7 +782,6 @@ footer span{color:var(--green);}
       📤 <strong>Our Order File</strong> — upload the Excel spreadsheet you sent to the supplier on WhatsApp / WeChat to place this order.
     </div>
     <div class="dz" id="dz-our-order"
-         onclick="document.getElementById('fi-our-order').click()"
          ondragover="dzO(event,'dz-our-order')" ondragleave="dzL('dz-our-order')"
          ondrop="dzDropFile(event,'our-order')">
       <span class="dz-icon">📊</span>
@@ -801,7 +800,6 @@ footer span{color:var(--green);}
       📄 <strong>Supplier PO / Proforma Invoice</strong> — once the supplier sends their PO or PI back (via WhatsApp/WeChat/email), <strong>Accounts Team</strong> uploads it here before processing payment.
     </div>
     <div class="dz" id="dz-sup-po"
-         onclick="document.getElementById('fi-sup-po').click()"
          ondragover="dzO(event,'dz-sup-po')" ondragleave="dzL('dz-sup-po')"
          ondrop="dzDropFile(event,'sup-po')">
       <span class="dz-icon">📄</span>
@@ -843,7 +841,6 @@ footer span{color:var(--green);}
         <div id="rem30-prev"></div>
         <div class="dz" style="padding:16px 14px;"
              id="dz-rem30"
-             onclick="document.getElementById('fi-rem30').click()"
              ondragover="dzO(event,'dz-rem30')" ondragleave="dzL('dz-rem30')"
              ondrop="dzDropFile(event,'rem30')">
           <span style="font-size:1.4rem;display:block;margin-bottom:5px;">🏦</span>
@@ -875,7 +872,6 @@ footer span{color:var(--green);}
         <div id="remf-prev"></div>
         <div class="dz" style="padding:16px 14px;"
              id="dz-remf"
-             onclick="document.getElementById('fi-remf').click()"
              ondragover="dzO(event,'dz-remf')" ondragleave="dzL('dz-remf')"
              ondrop="dzDropFile(event,'remf')">
           <span style="font-size:1.4rem;display:block;margin-bottom:5px;">🏦</span>
@@ -1589,17 +1585,27 @@ function applyFieldPermissions() {
 
   // Our order file drop zone — admin only
   const dzOur = document.getElementById('dz-our-order');
-  if(dzOur){ dzOur.style.opacity=canPO?'1':'0.5'; dzOur.style.cursor=canPO?'pointer':'not-allowed'; if(!canPO) dzOur.onclick=null; }
+  if(dzOur){
+    dzOur.style.opacity = canPO ? '1' : '0.5';
+    dzOur.style.cursor  = canPO ? 'pointer' : 'not-allowed';
+    dzOur.onclick = canPO ? ()=>document.getElementById('fi-our-order').click() : e=>{ e.preventDefault(); toast('Our order file upload is Admin only','err'); };
+  }
 
   // Supplier PO drop zone — admin + accounts
   const dzSup = document.getElementById('dz-sup-po');
-  if(dzSup){ dzSup.style.opacity=canSupPO?'1':'0.5'; dzSup.style.cursor=canSupPO?'pointer':'not-allowed'; if(!canSupPO) dzSup.onclick=null; }
+  if(dzSup){
+    dzSup.style.opacity = canSupPO ? '1' : '0.5';
+    dzSup.style.cursor  = canSupPO ? 'pointer' : 'not-allowed';
+    dzSup.onclick = canSupPO ? ()=>document.getElementById('fi-sup-po').click() : e=>{ e.preventDefault(); toast('Supplier PO upload is for Accounts Team and Admin','err'); };
+  }
 
   // Payment receipt drop zones — admin + accounts
   ['dz-rem30','dz-remf'].forEach(id=>{
     const dz=document.getElementById(id); if(!dz) return;
-    dz.style.opacity=canPay?'1':'0.5'; dz.style.cursor=canPay?'pointer':'not-allowed';
-    if(!canPay) dz.onclick=null;
+    const inputId = id==='dz-rem30' ? 'fi-rem30' : 'fi-remf';
+    dz.style.opacity = canPay ? '1' : '0.5';
+    dz.style.cursor  = canPay ? 'pointer' : 'not-allowed';
+    dz.onclick = canPay ? ()=>document.getElementById(inputId).click() : e=>{ e.preventDefault(); toast('Bank receipts are updated by Accounts Team','err'); };
   });
 
   // Permission notice
@@ -1790,21 +1796,31 @@ function setSteps(s){ for(let i=0;i<5;i++){const el=document.getElementById('stp
 function dzO(e,id){e.preventDefault();document.getElementById(id)?.classList.add('ov');}
 function dzL(id){document.getElementById(id)?.classList.remove('ov');}
 
-function dzDropFile(e,key){
-  e.preventDefault(); dzL('dz-'+key);
-  if(!canUploadKey(key)){toast('Access denied','err');return;}
-  const f=e.dataTransfer.files[0]; if(f) processFile(f,key);
+// Normalise hyphenated keys from HTML ondrop to camelCase used in JS
+function normalKey(key) {
+  const map = { 'our-order':'ourOrder', 'sup-po':'supPO', 'rem30':'rem30', 'remf':'remF', 'remF':'remF', 'ourOrder':'ourOrder', 'supPO':'supPO' };
+  return map[key] || key;
 }
 
-function handleFileUpload(e,key){
-  if(!canUploadKey(key)){toast('Access denied','err');return;}
-  const f=e.target.files[0]; if(f) processFile(f,key);
+function dzDropFile(e, key){
+  e.preventDefault();
+  key = normalKey(key);
+  dzL('dz-'+(key==='ourOrder'?'our-order':key==='supPO'?'sup-po':key));
+  if(!canUploadKey(key)){ toast('Access denied','err'); return; }
+  const f=e.dataTransfer.files[0]; if(f) processFile(f, key);
+}
+
+function handleFileUpload(e, key){
+  key = normalKey(key);
+  if(!canUploadKey(key)){ toast('Access denied','err'); return; }
+  const f=e.target.files[0]; if(f) processFile(f, key);
 }
 
 function canUploadKey(key){
-  if(key==='ourOrder') return can('editPO');          // admin only
-  if(key==='supPO') return can('editSupPO');          // admin + accounts
-  if(['rem30','remF'].includes(key)) return can('editPayments'); // admin + accounts
+  key = normalKey(key);
+  if(key==='ourOrder') return can('editPO');           // admin only
+  if(key==='supPO')    return can('editSupPO');        // admin + accounts
+  if(key==='rem30' || key==='remF') return can('editPayments'); // admin + accounts
   return false;
 }
 
@@ -1816,7 +1832,8 @@ const FILE_META = {
 };
 
 function processFile(file, key) {
-  const meta = FILE_META[key]; if(!meta) return;
+  key = normalKey(key);
+  const meta = FILE_META[key]; if(!meta){ console.warn('Unknown file key:',key); return; }
   const reader = new FileReader();
   reader.onload = e => {
     const fo = {name:file.name, size:file.size, data:e.target.result, mime:file.type};
@@ -1842,6 +1859,7 @@ function processFile(file, key) {
 }
 
 function showFilePrev(key, fo) {
+  key = normalKey(key);
   const meta = FILE_META[key]; if(!meta) return;
   const el = document.getElementById(meta.prevId); if(!el) return;
   if(!fo){ el.innerHTML=''; return; }
@@ -1851,6 +1869,7 @@ function showFilePrev(key, fo) {
 }
 
 function removeFile(key) {
+  key = normalKey(key);
   pendingFiles[key]=null;
   const meta=FILE_META[key]; if(!meta) return;
   document.getElementById(meta.prevId).innerHTML='';
